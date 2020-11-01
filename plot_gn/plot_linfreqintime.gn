@@ -1,0 +1,19 @@
+#!/usr/bin/gnuplot
+
+
+  input = './data/linfreqintime_mx0000my0003.dat'
+
+
+  set xlabel "Time t v_{ref}/L_{ref}"
+
+  set ylabel 'Growthrate {/Symbol g}_l, frequency {/Symbol w}_r [v_{ref}/L_{ref}]'
+  plot input u 1:2 ti '{/Symbol g}_l', \
+       input u 1:3 ti '{/Symbol w}_r'
+pause -1
+
+  set logscale y
+  set ylabel 'Error of growthrate {/Symbol g}_l, frequency {/Symbol w}_r'
+  plot input u 1:4 ti '({/Symbol g}_l-{/Symbol g}_{l0})/{/Symbol g}_l', \
+       input u 1:5 ti '({/Symbol w}_r-{/Symbol w}_{r0})/{/Symbol w}_r'
+pause -1
+

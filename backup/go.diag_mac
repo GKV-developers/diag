@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+#  ./go.diag_mac
+#
+
+
+### Working directory 
+DIR=`pwd`/../
+LDM=diag.exe
+
+
+### Run
+mkdir -p ${DIR}/post
+mkdir -p ${DIR}/post/data
+cp ${LDM} ${DIR}/post
+cd ${DIR}/post
+
+echo "Begin diagnostics."
+date
+./${LDM}
+echo "End diagnostics."
+date
+

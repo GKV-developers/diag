@@ -1,0 +1,47 @@
+#!/bin/csh
+
+###  NOTE  ###
+###    Process number x Thread number =< 32 Cores x Node numbers
+###    FX100 configurations: 2880 nodes, 32+2 cores
+###    Available resource groups:
+###      fx-interactive  # 1-   4 nodes,   24 hour
+###      fx-debug        # 1-  32 nodes,    1 hour
+###      fx-small        # 1-  16 nodes,  168 hour
+###      fx-middle       # 1-  96 nodes,   72 hour
+###      fx-large        # 1- 192 nodes,   72 hour
+###      fx-xlarge       # 1- 864 nodes,   24 hour
+###      fx-special      # 1-2592 nodes, unlimited
+###
+###    To submit a interactive job, "pjsub --interact sub.q"
+###                    a batch job, "pjsub sub.q"
+###                      step jobs, "pjsub --step sub1.q sub2.q ..."
+##############
+
+#PJM -L "rscgrp=fx-small"
+#PJM -L "node=1"
+#PJM -L "elapse=00:15:00"
+#PJM -j
+#PJM -s
+#PJM --mpi "proc=1"
+
+setenv PARALLEL 16          # Thread number for automatic parallelization
+setenv OMP_NUM_THREADS 16   # Thread number for Open MP
+
+
+### Working directory
+set DIR=/large2/z41049a/gkvp/f0.48/test01/
+set LDM=v28diag.exe
+
+
+### Run
+date
+mkdir -p ${DIR}/post
+mkdir -p ${DIR}/post/data
+cp ${LDM} ${DIR}/post
+cd ${DIR}/post
+
+echo "Begin diagnostics."
+./${LDM}
+echo "End diagnostics."
+date
+

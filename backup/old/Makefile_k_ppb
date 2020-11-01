@@ -1,0 +1,90 @@
+### K cross compiler ###
+#FC = frtpx
+#FFLAGS = -V -Kfast,parallel,ocl,optmsg=2 -Qt -Cpp -X9 -fw -Kopenmp
+#INC = -I/volume1/home/apps/fftw/3.3/include
+#LIB = -L/home/apps/fftw/3.3/lib64 -lfftw3_omp -lfftw3 -lm 
+
+### GNU Fortran compiler ###
+FC = gfortran
+FFLAGS = -fdefault-integer-8 -Wall -Wextra -Wconversion -pedantic -fbounds-check \
+         -O -Wuninitialized -ffpe-trap=invalid,zero,overflow -fbacktrace
+FFLAGS += -Os -mcmodel=medium -fconvert=big-endian -frecord-marker=4
+#FFLAGS += -fopenmp
+INC = -I/volume1/home/hp120011/k00065/mylib/fftw/3.3.3/include
+LIB = -L/volume1/home/hp120011/k00065/mylib/fftw/3.3.3/lib -lfftw3 -lm# -lfftw3_omp
+
+#MYL = ./lib/
+#MATH = gkvp_f0.29_math_SSL2
+
+SRC = ./src
+PROG = v28diag.exe
+
+diag:	${SRC}/diag_header.f90\
+	${SRC}/diag_functions.f90\
+	${SRC}/diag_clock.f90\
+	${SRC}/gkvp_f0.48_igs.f90\
+	${SRC}/gkvp_f0.48_vmecin.f90\
+	${SRC}/diag_geom.f90\
+	${SRC}/diag_rb.f90\
+	${SRC}/diag_fft.f90\
+	${SRC}/out_mominxy.f90\
+	${SRC}/out_mominxz.f90\
+	${SRC}/out_mominkxky.f90\
+	${SRC}/out_momintky.f90\
+	${SRC}/out_trninkxky.f90\
+	${SRC}/out_mominz.f90\
+	${SRC}/out_mominavs.f90\
+	${SRC}/out_mominxmf.f90\
+	${SRC}/out_mominvtk.f90\
+	${SRC}/out_ffinzv.f90\
+	${SRC}/out_ffinzvm_vtk.f90\
+	${SRC}/out_mominfreq.f90\
+	${SRC}/out_correlate.f90\
+	${SRC}/out_realsp.f90\
+	${SRC}/out_bicoherence.f90\
+	${SRC}/out_zfshearing.f90\
+	${SRC}/out_zfdensity.f90\
+	${SRC}/out_fluidtotaltrans.f90\
+	${SRC}/out_fluidsubsptrans.f90\
+	${SRC}/out_fluiddetailtrans.f90\
+	${SRC}/diag_main.f90
+
+	${FC} ${FFLAGS} -c ${SRC}/diag_header.f90
+	${FC} ${FFLAGS} -c ${SRC}/diag_functions.f90
+	${FC} ${FFLAGS} -c ${SRC}/diag_clock.f90
+	${FC} ${FFLAGS} -c ${SRC}/gkvp_f0.48_igs.f90
+	${FC} ${FFLAGS} -c ${SRC}/gkvp_f0.48_vmecin.f90
+	${FC} ${FFLAGS} -c ${SRC}/diag_geom.f90
+	${FC} ${FFLAGS} -c ${SRC}/diag_rb.f90
+	${FC} ${FFLAGS} -c ${SRC}/diag_fft.f90 ${INC}
+	${FC} ${FFLAGS} -c ${SRC}/out_mominxy.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_mominxz.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_mominkxky.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_momintky.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_trninkxky.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_mominz.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_mominavs.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_mominxmf.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_mominvtk.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_ffinzv.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_ffinzvm_vtk.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_mominfreq.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_correlate.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_realsp.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_bicoherence.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_zfshearing.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_zfdensity.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_fluidtotaltrans.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_fluidsubsptrans.f90
+#	${FC} ${FFLAGS} -c ${SRC}/out_fluiddetailtrans.f90
+	${FC} ${FFLAGS} -c ${SRC}/diag_main.f90
+
+	${FC} ${FFLAGS} *.o -o ${PROG} ${LIB}
+
+	rm -f *.o *.mod
+
+clean:
+	rm -f *.o *.mod *.exe CompileList.txt
+
+clear:
+	rm -f *.log

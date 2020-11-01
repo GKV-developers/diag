@@ -1,0 +1,20 @@
+#!/usr/bin/gnuplot
+
+
+  input = './data/linfreqinkxky.dat'
+
+
+  set pm3d map
+  set xlabel "Radial wave number k_x{/Symbol r}_{ref}"
+  set ylabel "Poloidal wave number k_y{/Symbol r}_{ref}"
+
+  set title 'Linear growthrate {/Symbol g}_l [v_{ref}/L_{ref}]'
+  splot input u 1:2:3 ti '{/Symbol g}_l'
+pause -1
+
+  set title 'Real frequency {/Symbol w}_r [v_{ref}/L_{ref}]'
+  splot input u 1:2:4 ti '{/Symbol w}_r'
+pause -1
+
+
+

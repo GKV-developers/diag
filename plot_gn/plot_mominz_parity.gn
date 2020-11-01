@@ -1,0 +1,23 @@
+#!/usr/bin/gnuplot
+
+  lsta = 1
+  lend = 144
+  lskp = 1
+  dt = 0.1
+
+  mx = 0
+  my = 1
+  #set xrange [-5*pi:5*pi]
+  #set yrange [-2:2]
+
+
+do for [loop=lsta:lend:lskp]{
+  input = sprintf('./data/phiinz_parity_mx%04dmy%04d_t%08d.dat', mx, my, loop)
+  set title 't v_{ti}/R = '.sprintf('%7.2f', dt*loop)
+  plot input u 1:2 ti 'Re[{/Symbol f}_k] (Ballooning)' w lp, \
+          '' u 1:3 ti 'Im[{/Symbol f}_k] (Ballooning)' w lp, \
+       input u 1:4 ti 'Re[{/Symbol f}_k] (Tearing)' w lp, \
+          '' u 1:5 ti 'Im[{/Symbol f}_k] (Tearing)' w lp
+  pause 0.2
+}
+pause -1

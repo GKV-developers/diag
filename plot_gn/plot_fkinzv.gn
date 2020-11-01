@@ -1,0 +1,30 @@
+#!/usr/bin/gnuplot
+
+  loop_sta = 0
+  loop_end = 1
+  loop_skp = 1
+
+  mx = 0
+  my = 3
+  im = 4
+  is = 0
+
+  set pm3d map
+  set xlabel 'Field-aligned coordinate z'
+  set ylabel 'Parallel velocity v_{||} / v_{ts}'
+
+
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/fkinzv_mx%04dmy%04dm%04ds%d_t%08d.dat', mx, my, im, is, loop)
+  splot input u 1:2:3 ti 'Re[f_k]'
+  pause 0.2
+}
+pause -1
+
+
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/fkinzv_mx%04dmy%04dm%04ds%d_t%08d.dat', mx, my, im, is, loop)
+  splot input u 1:2:4 ti 'Im[f_k]'
+  pause 0.2
+}
+pause -1

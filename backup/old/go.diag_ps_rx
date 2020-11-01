@@ -1,0 +1,46 @@
+#!/bin/csh
+
+###  NOTE  ###
+###    Available resource groups:
+###      das         #     1 node, 5 hours, 32GB/nodes  2run/4submit
+###      interactive #     1 node, 1 hour,  32GB/nodes  1run/1submit
+###
+###    To submit a interactive job, "pjsub --interact sub.q"
+###                    a batch job, "pjsub sub.q"
+###            To check job status, "pjstat" for step jobs "pjstat -E"
+###                  To delete job, "pjdel JOBID"
+###     To show budget information, "pstime"
+##############
+
+
+#PJM -L "rscunit=rx"
+#### -L "rscgrp=interactive"
+#PJM -L "rscgrp=das"
+#PJM -L "vnode=1"
+#PJM -L "vnode-core=1"
+#PJM -L "node=1"
+#PJM -L "elapse=00:15:00"
+#PJM -j
+#PJM -g 16227
+
+setenv PARALLEL 1          # Thread number for automatic parallelization
+setenv OMP_NUM_THREADS 1   # Thread number for Open MP
+
+
+### Working directory 
+set DIR = /data/lng/maeyama/gkvp/f0.48/dev11
+set LDM = v28diag.exe
+
+
+### Run
+date
+mkdir -p ${DIR}/post
+mkdir -p ${DIR}/post/data
+cp ${LDM} ${DIR}/post
+cd ${DIR}/post
+
+echo "Begin diagnostics."
+date
+./${LDM}
+echo "End diagnostics."
+date

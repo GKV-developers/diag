@@ -1,0 +1,24 @@
+#!/usr/bin/gnuplot
+
+  loop_sta = 0
+  loop_end = 30
+  loop_skp = 1
+  dtout_fxv = 1.0
+
+  rankz = 4
+  iv = 8
+  im = 4
+  is = 0
+
+  set pm3d map
+  set xlabel 'Radial wavenumber k_x {/Symbol r}_{ref}'
+  set ylabel 'Poloidal wavenumber k_y {/Symbol r}_{ref}'
+
+
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/fkinkxky_rankz%04dv%04dm%04ds%d_t%08d.dat', rankz, iv, im, is, loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_fxv*loop)
+  splot input u 1:2:3 ti '|f_k|^2'
+  pause 0.2
+}
+pause -1

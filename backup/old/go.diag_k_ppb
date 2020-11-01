@@ -1,0 +1,32 @@
+#!/bin/sh
+### To submit a job: 1. Login to Pre/Post server - ssh ppb
+###                  2. Execute                  - ./go.diag_ppb
+### For NO HUNG UP: nohup ./go.diag_ppb > out.log 2> err.log < /dev/null &
+
+
+
+LDM=v28diag.exe
+DIR=/volume61/data/hp120011/maeyama/gkvp/f0.48/test01/
+
+
+
+### Compile
+
+export OMP_NUM_THREADS=1   # Thread number for Open MP
+
+echo "Begin compilation."
+make 2>&1 | tee CompileList.txt
+echo "End compilation."
+
+
+### Run
+mkdir -p ${DIR}/post
+mkdir -p ${DIR}/post/data
+cp ${LDM} ${DIR}/post
+cd ${DIR}/post
+
+echo "Begin diagnostics."
+date
+./${LDM}
+echo "End diagnostics."
+date

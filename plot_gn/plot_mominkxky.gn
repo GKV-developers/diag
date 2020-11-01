@@ -1,0 +1,40 @@
+#!/usr/bin/gnuplot
+
+  loop_sta = 0
+  loop_end = 300
+  loop_skp = 1
+  dtout_ptn = 0.1
+
+  set pm3d map
+  set xlabel "Radial wave number k_x{/Symbol r}_{ref}"
+  set ylabel "Poloidal wave number k_y{/Symbol r}_{ref}"
+
+
+### Electrostatc potential phi ###
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/phiinkxky_t%08d.dat', loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:3 ti '<|{/Symbol f}_k|^2>'
+  pause 0.2
+}
+pause -1
+
+
+### Magnetic vector potential Al ###
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/Alinkxky_t%08d.dat', loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:3 ti '<|A_{||k}|^2>'
+  pause 0.2
+}
+pause -1
+
+
+### Fluid moments ###
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/mominkxky_s0_t%08d.dat', loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:3 ti '<|n_{sk}|^2>'
+  pause 0.2
+}
+pause -1

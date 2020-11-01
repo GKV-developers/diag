@@ -1,0 +1,39 @@
+#!/usr/bin/gnuplot
+
+  global_ny = 1
+  #kymin = 0.066666666666666
+
+  set logscale y
+
+### Electrostatc potential phi ###
+  input = './data/engintky.dat'
+  plot input u 1:2 ti 'Total' w l
+  replot for [my=3:global_ny+3] input u 1:my ti 'my='.sprintf('%4d', my-3) w l
+  #replot for [my=3:global_ny+3] input u 1:my ti 'ky='.sprintf('%5.2f', kymin*(my-3)) w l
+pause -1
+
+
+### Magnetic vector potential Al ###
+  input = './data/menintky.dat'
+  plot input u 1:2 ti 'Total' w l
+  replot for [my=3:global_ny+3] input u 1:my ti 'my='.sprintf('%4d', my-3) w l
+  #replot for [my=3:global_ny+3] input u 1:my ti 'ky='.sprintf('%5.2f', kymin*(my-3)) w l
+pause -1
+
+
+### Electrostatic field energy W_E ###
+  input = './data/wesintky.dat'
+  plot input u 1:2 ti 'Total' w l
+  replot for [my=3:global_ny+3] input u 1:my ti 'my='.sprintf('%4d', my-3) w l
+  #replot for [my=3:global_ny+3] input u 1:my ti 'ky='.sprintf('%5.2f', kymin*(my-3)) w l
+pause -1
+
+
+### Magnetic field energy W_M ###
+  input = './data/wemintky.dat'
+  plot input u 1:2 ti 'Total' w l
+  replot for [my=3:global_ny+3] input u 1:my ti 'my='.sprintf('%4d', my-3) w l
+  #replot for [my=3:global_ny+3] input u 1:my ti 'ky='.sprintf('%5.2f', kymin*(my-3)) w l
+pause -1
+
+

@@ -1,0 +1,63 @@
+#!/usr/bin/gnuplot
+
+  loop_sta = 100
+  loop_end = 144
+  loop_skp = 1
+  dtout_ptn = 0.1
+
+  iz = 0
+
+  set pm3d map
+  set xlabel "Radial direction x / {/Symbol r}_{ref}"
+  set ylabel "Poloidal direction y / {/Symbol r}_{ref}"
+
+
+### Electrostatc potential phi ###
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/phiinxy_parity_z%04d_t%08d.dat', iz, loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:3 ti '{/Symbol f}_{even}^{(b)}'
+  pause 0.2
+}
+pause -1
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/phiinxy_parity_z%04d_t%08d.dat', iz, loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:4 ti '{/Symbol f}_{odd}^{(t)}'
+  pause 0.2
+}
+pause -1
+
+
+#### Magnetic vector potential Al ###
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/Alinxy_parity_z%04d_t%08d.dat', iz, loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:3 ti 'A_{||,even}^{(t)}'
+  pause 0.2
+}
+pause -1
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/Alinxy_parity_z%04d_t%08d.dat', iz, loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:4 ti 'A_{||,odd}^{(b)}'
+  pause 0.2
+}
+pause -1
+
+
+### Fluid moments ###
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/mominxy_parity_z%04ds%1d_t%08d.dat', iz, 0, loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:4 ti 'upara_{e,even}^{(t)}'
+  pause 0.2
+}
+pause -1
+do for [loop=loop_sta:loop_end:loop_skp]{
+  input = sprintf('./data/mominxy_parity_z%04ds%1d_t%08d.dat', iz, 0, loop)
+  set title 't v_{ref}/L_{ref} = '.sprintf('%7.2f', dtout_ptn*loop)
+  splot input u 1:2:10 ti 'upara_{e,odd}^{(b)}'
+  pause 0.2
+}
+pause -1

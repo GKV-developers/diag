@@ -1,0 +1,48 @@
+#!/bin/sh
+
+#SBATCH -A HBGK           # Project name
+#SBATCH -J GKV            # Job name
+#SBATCH -N 1              # Number of nodes
+#SBATCH -n 1              # Number of tasks
+#SBATCH -c 16
+#SBATCH -o %j.out         # strour filename (%j is JobID.)
+#SBATCH -e %j.err         # strerr filename
+#SBATCH -t 01:00:00       # Execute time
+
+#module load bullxmpi intel
+module load intelmpi intel
+
+ulimit -c 0
+ulimit -s unlimited
+
+export OMP_NUM_THREADS=16
+export MKL_NUM_THREADS=1
+export KMP_AFFINITY=verbose
+export KMP_STACKSIZE=4G
+echo $SLURM_JOB_ID
+echo $SLURM_JOB_NUM_NODES
+echo $SLURM_JOB_NODELIST
+export I_MPI_EXTRA_FILESYSTEM=enable
+export I_MPI_EXTRA_FILESYSTEM_LIST=lustre
+
+NAGDIR=/csc/softs/nag/fsl6i22dc
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${NAGDIR}/lib"
+
+
+### Working directory 
+DIR=/csc/workdir3/smaeyama/gkvp/f0.48/test01/
+LDM=v28diag.exe
+
+
+### Run
+date
+mkdir -p ${DIR}/post
+mkdir -p ${DIR}/post/data
+cp ${LDM} ${DIR}/post
+cd ${DIR}/post
+
+echo "Begin diagnostics."
+./${LDM}
+echo "End diagnostics."
+date
+

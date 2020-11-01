@@ -1,0 +1,55 @@
+#!/usr/bin/gnuplot
+
+  global_ny = 1
+  #kymin = 0.1
+
+  set logscale y
+
+### Electrostatc potential phi ###
+  set title "<|phi|^2>"
+  input = './data/engintky_parity.dat'
+  plot input u 1:2 ti 'even,total' w l
+  replot for [mye=3:global_ny+3] input u 1:mye ti 'even,mye='.sprintf('%4d', mye-3) w l
+  #replot for [mye=3:global_ny+3] input u 1:mye ti 'even,ky='.sprintf('%5.2f', kymin*(mye-3)) w l
+  replot input u 1:global_ny+4 ti 'odd,total' w l
+  replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,myo='.sprintf('%4d', myo-global_ny-5) w l
+  #replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,ky='.sprintf('%5.2f', kymin*(myo-global_ny-5)) w l
+pause -1
+
+
+### Magnetic vector potential Al ###
+  set title "<|Al|^2>"
+  input = './data/menintky_parity.dat'
+  plot input u 1:2 ti 'even,total' w l
+  replot for [mye=3:global_ny+3] input u 1:mye ti 'even,mye='.sprintf('%4d', mye-3) w l
+  #replot for [mye=3:global_ny+3] input u 1:mye ti 'even,ky='.sprintf('%5.2f', kymin*(mye-3)) w l
+  replot input u 1:global_ny+4 ti 'odd,total' w l
+  replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,myo='.sprintf('%4d', myo-global_ny-5) w l
+  #replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,ky='.sprintf('%5.2f', kymin*(myo-global_ny-5)) w l
+pause -1
+
+
+### Electrostatic field energy W_E ###
+  set title "W_E"
+  input = './data/wesintky_parity.dat'
+  plot input u 1:2 ti 'even,total' w l
+  replot for [mye=3:global_ny+3] input u 1:mye ti 'even,mye='.sprintf('%4d', mye-3) w l
+  #replot for [mye=3:global_ny+3] input u 1:mye ti 'even,ky='.sprintf('%5.2f', kymin*(mye-3)) w l
+  replot input u 1:global_ny+4 ti 'odd,total' w l
+  replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,myo='.sprintf('%4d', myo-global_ny-5) w l
+  #replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,ky='.sprintf('%5.2f', kymin*(myo-global_ny-5)) w l
+pause -1
+
+
+### Magnetic field energy W_M ###
+  set title "W_M"
+  input = './data/wemintky_parity.dat'
+  plot input u 1:2 ti 'even,total' w l
+  replot for [mye=3:global_ny+3] input u 1:mye ti 'even,mye='.sprintf('%4d', mye-3) w l
+  #replot for [mye=3:global_ny+3] input u 1:mye ti 'even,ky='.sprintf('%5.2f', kymin*(mye-3)) w l
+  replot input u 1:global_ny+4 ti 'odd,total' w l
+  replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,myo='.sprintf('%4d', myo-global_ny-5) w l
+  #replot for [myo=global_ny+5:2*global_ny+5] input u 1:myo ti 'odd,ky='.sprintf('%5.2f', kymin*(myo-global_ny-5)) w l
+pause -1
+
+
