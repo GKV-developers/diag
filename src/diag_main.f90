@@ -108,8 +108,8 @@ PROGRAM diag
 !
 != example to write moments in kxky =
     write(*,*) "OUTPUT : phiinkxky* Alinkxky* mominkxky*"
-    loop_skp = 1
-    loop_sta = (int((loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+    loop_skp = 10
+    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
     loop_end = loop_phi_end(enum)
     do loop = loop_sta, loop_end, loop_skp
       call phiinkxky( loop )
@@ -123,7 +123,7 @@ PROGRAM diag
 != example to write entropy balance diagnostics in kxky =
     write(*,*) "OUTPUT : trninkxky* "
     loop_skp = 10
-    loop_sta = (int((loop_trn_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_trn_sta(snum)
+    loop_sta = (floor(dble(loop_trn_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_trn_sta(snum)
     loop_end = loop_trn_end(enum)
     do loop = loop_sta, loop_end, loop_skp
       do is = 0, ns-1
@@ -135,8 +135,8 @@ PROGRAM diag
 != example to write moments in xy =
     write(*,*) "OUTPUT : phiinxy* Alinxy* mominxy*"
     giz = 0
-    loop_skp = 1
-    loop_sta = (int((loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+    loop_skp = 10
+    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
     loop_end = loop_phi_end(enum)
     do loop = loop_sta, loop_end, loop_skp
       call phiinxy( giz, loop )
@@ -158,8 +158,8 @@ PROGRAM diag
     write(*,*) "OUTPUT : phiinz* Alinz* mominz*"
     mx = 0
     gmy = 6
-    loop_skp = 1
-    loop_sta = (int((loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+    loop_skp = 10
+    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
     loop_end = loop_phi_end(enum)
     do loop = loop_sta, loop_end, loop_skp
 !      call phiinz( mx, gmy, loop )
@@ -183,8 +183,8 @@ PROGRAM diag
 
 !!= example to write moments in tky =
 !    write(*,*) "OUTPUT : momintky* "
-!    loop_skp = 1
-!    loop_sta = (int((loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+!    loop_skp = 10
+!    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
 !    loop_end = loop_phi_end(enum)
 !    call momintky_open( "./data/wesintky_parity.dat" )
 !    do loop = loop_sta, loop_end, loop_skp
@@ -214,8 +214,8 @@ PROGRAM diag
 !    rankz = nprocz/2
 !    giv = 8
 !    gim = 4
-!    loop_skp = 1
-!    loop_sta = (int((loop_fxv_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_fxv_sta(snum)
+!    loop_skp = 10
+!    loop_sta = (floor(dble(loop_fxv_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_fxv_sta(snum)
 !    loop_end = loop_fxv_end(enum)
 !    do loop = loop_sta, loop_end, loop_skp
 !      do is = 0, ns-1
@@ -226,8 +226,8 @@ PROGRAM diag
 !    !giz = 0
 !    !giv = 8
 !    !gim = 4
-!    !loop_skp = 1
-!    !loop_sta = (int((loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
+!    !loop_skp = 10
+!    !loop_sta = (floor(dble(loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
 !    !loop_end = loop_cnt_end(enum)
 !    !do loop = loop_sta, loop_end, loop_skp
 !    !  do is = 0, ns-1
@@ -242,8 +242,8 @@ PROGRAM diag
 !    mx = 0
 !    gmy = 1
 !    rankz = nprocz/2
-!    loop_skp = 1
-!    loop_sta = (int((loop_fxv_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_fxv_sta(snum)
+!    loop_skp = 10
+!    loop_sta = (floor(dble(loop_fxv_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_fxv_sta(snum)
 !    loop_end = loop_fxv_end(enum)
 !    do loop = loop_sta, loop_end, loop_skp
 !      do is = 0, ns-1
@@ -254,8 +254,8 @@ PROGRAM diag
 !    !mx = 0
 !    !gmy = 3
 !    !giz = 0
-!    !loop_skp = 1
-!    !loop_sta = (int((loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
+!    !loop_skp = 10
+!    !loop_sta = (floor(dble(loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
 !    !loop_end = loop_cnt_end(enum)
 !    !do loop = loop_sta, loop_end, loop_skp
 !    !  do is = 0, ns-1
@@ -270,8 +270,8 @@ PROGRAM diag
 !    mx = 0
 !    gmy = 3
 !    gim = 4
-!    loop_skp = 1
-!    loop_sta = (int((loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
+!    loop_skp = 10
+!    loop_sta = (floor(dble(loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
 !    loop_end = loop_cnt_end(enum)
 !    do loop = loop_sta, loop_end, loop_skp
 !      do is = 0, ns-1
@@ -287,8 +287,8 @@ PROGRAM diag
 !    != read from cnt/*cnt* =
 !    mx = 0
 !    gmy = 1
-!    loop_skp = 1
-!    loop_sta = (int((loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
+!    loop_skp = 10
+!    loop_sta = (floor(dble(loop_cnt_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_cnt_sta(snum)
 !    loop_end = loop_cnt_end(enum)
 !    do is = 0, ns-1
 !      call fkinzvm_vtk( mx, gmy, is, loop_sta, loop_end, loop_skp )
@@ -299,7 +299,7 @@ PROGRAM diag
 !!= example to write moments in xyz =
     write(*,*) "OUTPUT : phiinvtk* phiinxmf* "
     loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
-    loop_sta = (int((loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
     loop_end = loop_phi_end(enum)
 !!    flag=1; call phiinvtk( flag, loop_sta, loop_end, loop_skp )  ! output coord&var(fluxtube)
 !    flag=3; call phiinvtk( flag, loop_sta, loop_end, loop_skp )  ! output coord&var(full torus)
@@ -313,8 +313,8 @@ PROGRAM diag
 !
 != example to write moments in xy =
     write(*,*) "OUTPUT : phiinrz* "
-    loop_skp = 1
-    loop_sta = (int((loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+    loop_skp = 10
+    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
     loop_end = loop_phi_end(enum)
     do loop = loop_sta, loop_end, loop_skp
       call phiinrz( loop )
@@ -323,8 +323,8 @@ PROGRAM diag
 
 != example to write triad transfer diagnostics in kxky =
     write(*,*) "OUTPUT : triinkxky* "
-    loop_skp = 1
-    loop_sta = (int((loop_tri_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_tri_sta(snum)
+    loop_skp = 10
+    loop_sta = (floor(dble(loop_tri_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_tri_sta(snum)
     loop_end = loop_tri_end(enum)
     do loop = loop_sta, loop_end, loop_skp
       do is = 0, ns-1
