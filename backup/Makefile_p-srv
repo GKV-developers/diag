@@ -8,8 +8,8 @@ FFLAGS += -i8 # Change default integer type as integer(kind=8).
 #FFLAGS += -warn all -g -traceback -fpe0 -check bounds -check uninit # Debug
 INC = 
 LIB = -mkl
-INC += -I/usr/local/pken/include/
-LIB += -L/usr/local/pken/lib/ -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl -lm
+INC += -I/home/pken/include/
+LIB += -L/home/pken/lib/ -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl -lm
 
 
 

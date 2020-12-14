@@ -40,14 +40,16 @@ export KMP_STACKSIZE=6G   # OpenMP stack memory size (per thread)
 
 
 ### Working directory 
-DIR=/home/ibuki/gkvp/gkvp_f0.55_p-srv/run/data
+DIR=/home/smaeyama/gkvp/f0.59/gkvp/run/data/
 LDM=diag.exe
 
+cd ${PBS_O_WORKDIR}
+export LD_LIBRARY_PATH=/home/pken/lib:${LD_LIBRARY_PATH}
 
 ### Run
 mkdir -p ${DIR}/post
 mkdir -p ${DIR}/post/data
-cp ${DIR}/diag_netcdf/${LDM} ${DIR}/post
+cp ./${LDM} ${DIR}/post
 cd ${DIR}/post
 
 pwd
