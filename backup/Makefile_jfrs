@@ -19,11 +19,19 @@ OPTRPT = 'lst'
 ##FFLAGS += -g # Debug
 #OPTRPT = 'optrpt'
 
-### NOTE: module load cray-fftw
-INC = 
-LIB = -L${FFTW_DIR} -lfftw3 -lm
-### NOTE: module load cray-fftw cray-netcdf
-LIB += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 #-lz -lcurl -lm
+### Usage of FFTW (module load cray-fftw)
+INC += -I${FFTW_INC}
+LIB += -L${FFTW_DIR} -lfftw3 -lm
+### Usage of NetCDF (module load cray-hdf5-parallel/1.10.5.1 cray-netcdf-hdf5parallel/4.6.3.1)
+INC += -I$(NETCDF_DIR)/include -I$(HDF5_DIR)/include
+LIB += -L$(NETCDF_DIR)/lib -L$(HDF5_DIR)/lib -lnetcdff -lnetcdf -lhdf5_hl -lhdf5
+
+
+### Read Fortran binary GKV output
+FILEIO = diag_rb_fortran
+### Read NetCDF GKV output
+#FILEIO = diag_rb_netcdf
+
 
 SRC = ./src
 PROG = diag.exe
@@ -36,7 +44,7 @@ diag:	${SRC}/diag_header.f90\
 	${SRC}/diag_geom.f90\
 	${SRC}/diag_intgrl.f90\
 	${SRC}/diag_parity.f90\
-	${SRC}/diag_rb.f90\
+	${SRC}/${FILEIO}.f90\
 	${SRC}/diag_fft.f90\
 	${SRC}/out_textfile.f90\
 	${SRC}/out_netcdf.f90\
@@ -75,10 +83,10 @@ diag:	${SRC}/diag_header.f90\
 	${FC} ${FFLAGS} -c ${SRC}/diag_geom.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_intgrl.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_parity.f90
-	${FC} ${FFLAGS} -c ${SRC}/diag_rb.f90
+	${FC} ${FFLAGS} -c ${SRC}/${FILEIO}.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/diag_fft.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_textfile.f90
-	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC} ${LIB}
+	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_mominxy.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_mominxz.f90
 	${FC} ${FFLAGS} -c ${SRC}/out_mominkxky.f90

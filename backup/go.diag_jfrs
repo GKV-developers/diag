@@ -67,7 +67,7 @@ srun assign -U on g:sf
 
 
 ### Working directory 
-DIR=/work/smaeyama/gkvp/f0.55/test01
+DIR=/work/smaeyama/gkvp/f0.60/data_SmallGridIO
 LDM=diag.exe
 
 ### Run
