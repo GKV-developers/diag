@@ -4,18 +4,21 @@ FFLAGS = -report-all -O3 -fpp $(EXTRA) #-mparallel
 FFLAGS += -fdiag-vector=2 -fdiag-inline=2 -fdiag-parallel=2
 FFLAGS += -fdefault-integer=8 # Change default integer type as integer(kind=8).
 
-ifneq ("x$(FFLAGS_OMP1)_$(FFLAGS_OMP2)_$(FFLAGS_OMP3)_","x___")
-   FFLAGS_LOMP= -fopenmp
-endif
-
 #NLC_HOME=/opt/nec/ve/nlc/2.1.0
 #INC = -I$(NLC_HOME)/include
 #LIB = -L$(NLC_HOME)/lib  -laslfftw3 -lasl_sequential -ftrace
 
+### Usage of FFTW (moulde load fftw-sx)
 INC = 
-LIB = -lfftw3 -lm
+LIB += -lfftw3 -lm
+### Usage of NetCDF (module load netcdf-parallelIO-fortran-sx)
 LIB += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 
+
+### Read Fortran binary GKV output
+FILEIO = diag_rb_fortran
+### Read NetCDF GKV output
+#FILEIO = diag_rb_netcdf
 
 
 SRC = ./src
@@ -29,7 +32,7 @@ diag:	${SRC}/diag_header.f90\
 	${SRC}/diag_geom.f90\
 	${SRC}/diag_intgrl.f90\
 	${SRC}/diag_parity.f90\
-	${SRC}/diag_rb.f90\
+	${SRC}/${FILEIO}.f90\
 	${SRC}/diag_fft.f90\
 	${SRC}/out_textfile.f90\
 	${SRC}/out_netcdf.f90\
@@ -68,10 +71,10 @@ diag:	${SRC}/diag_header.f90\
 	${FC} ${FFLAGS} -c ${SRC}/diag_geom.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_intgrl.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_parity.f90
-	${FC} ${FFLAGS} -c ${SRC}/diag_rb.f90
+	${FC} ${FFLAGS} -c ${SRC}/${FILEIO}.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/diag_fft.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_textfile.f90
-	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC} ${LIB}
+	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_mominxy.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_mominxz.f90
 	${FC} ${FFLAGS} -c ${SRC}/out_mominkxky.f90
