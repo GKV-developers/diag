@@ -41,7 +41,7 @@
 #PJM --rsc-list "rscgrp=eap-small" # Job class     
 #PJM --rsc-list "node=1"           # Number of nodes
 #PJM --rsc-list "elapse=00:30:00"  # Execute time
-#PJM --mpi "proc=12"               # Number of MPI (= Number of nodes x 4)
+#PJM --mpi "proc=1"                # Number of MPI (= Number of nodes x 4)
 #### --mpi "rank-map-bynode"
 #### --mpi "rank-map-hostfile=rankmapfile.dat"
 #PJM -j                           # Write error in standard output file
@@ -59,13 +59,13 @@ echo "          MPI Processes: ${NUM_PROCS}"
 echo " OpenMP threads per MPI: ${OMP_NUM_THREADS}"
 
 
-spack load netcdf-fortran@4.5.2%fj
+spack load netcdf-fortran%fj
 #export XOS_MMM_L_PAGING_POLICY=demand:demand:demand # For Largepage
 #export PLE_MPI_STD_EMPTYFILE="off" # Suppress stdout of filesize-0
 
 
 ### Working directory 
-DIR=/new_data/hp150279/u00165/gkvp/f0.59/bpp/nl/nl_eDTHe_x0128y0032z20v32m15
+DIR=/data/hp150279/u00165/gkvp/f0.60/data_SmallGridIO
 LDM=diag.exe
 
 
