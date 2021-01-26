@@ -1,0 +1,83 @@
+#!/bin/sh
+
+###  NOTE  ###
+###  Flow supercomputer Type I sub-system, PRIMEHPC FX1000 (Nagoya Univ, 2020)
+###
+###  - Computation nodes(total 2304 nodes)
+###      CPU: A64FX (2.0GHz, 12coresx4CMG=48cores, 512bit SIMD) x1 per node
+###      Peak performance: DP 3.379 TFLOPS per node (Boost: 3.3792 TFLOPS)
+###      Cache L1: 64 KiB, 4 way
+###      Cache L1 Bandwidth: 230+ GB/s(load), 115+ GB/s (store)
+###      Cache L2: 8 MiB, 16 way per CMG(NUMA), 4CMG per node
+###      Cache L2 Bandwidth: 3.6+ TB/s per node
+###                          115+ GB/s(load), 57+ GB/s(store) per core
+###      Memory: HBM2 32 GiB
+###      Memory Bandwidth: 1024 GB/s per node
+###
+###      Therefore, a recommended GKV parallelization may be 
+###          (MPI Processes)x(12 OpenMP Threads)
+###          =(12 cores per CMG)x(4 CMG)x(Node numbers)
+###      1 MPI process should be assigined to 1 CMG.
+###
+###  - Interconnect
+###      Tofu Interconnect D (28 Gbps x 2 lane x 10 port)
+###      [Performance] 8B Put latency: 0.49-0.54 usec
+###                    1MiB Put throughput: 6.35 GB/s
+###
+###  - Job class (May 2020)
+###      fx-debug  :  1 - 36  nodes,   1 hour,  50 run/300 submit
+###      fx-small  :  1 - 24  nodes, 168 hour, 100 run/300 submit
+###      fx-middle : 12 - 96  nodes,  72 hour,  50 run/300 submit
+###      fx-large  : 96 - 192 nodes,  72 hour,  25 run/300 submit
+###      fx-xlarge : 96 - 768 nodes,  24 hour,   5 run/300 submit
+###
+###  - Commands
+###      (Submit a batch job : "pjsub sub.q") Use shoot script for GKV.
+###      Check job status    : "pjstat" or "pjstat -E" for step jobs
+###      Delete job          : "pjdel JOBID"
+###      Show budget info    : "charge"
+###      Show disk usage     : "lfs quota -u (YOUR ACCOUNT ID) /home"
+###                          : "lfs quota -u (YOUR ACCOUNT ID) /data"
+##############
+
+#PJM --rsc-list "rscgrp=fx-debug"
+#PJM --rsc-list "node=1"       
+#PJM --rsc-list "elapse=00:10:00"
+#PJM --mpi "proc=1"           
+#PJM -j                          
+#PJM -s                           
+
+NUM_NODES=${PJM_NODE}             # Nodes
+NUM_CORES=12                      # Cores per node
+NUM_PROCS=$(( ${NUM_NODES} * 4 )) # MPI processes
+export OMP_NUM_THREADS=12         # OpenMP threads per MPI
+
+
+echo "                  Nodes: ${NUM_NODES}"
+echo "         Cores per node: ${NUM_CORES}"
+echo "          MPI Processes: ${NUM_PROCS}"
+echo " OpenMP threads per MPI: ${OMP_NUM_THREADS}"
+
+#export XOS_MMM_L_PAGING_POLICY=demand:demand:demand # For Largepage
+#export PLE_MPI_STD_EMPTYFILE="off" # Suppress stdout of filesize-0
+#module load fftw-tune phdf5 netcdf-c netcdf-fortran
+
+
+### Working directory 
+DIR=/data/group1/z43460z/gkvp/f0.60/data_SmallGridIO
+LDM=diag.exe
+
+
+### Run
+mkdir -p ${DIR}/post
+mkdir -p ${DIR}/post/data
+cp ${LDM} ${DIR}/post
+cd ${DIR}/post
+
+echo "Begin diagnostics."
+date
+#mpiexec -n ${NUM_PROCS} ${DIR}/${LDM}
+./${LDM}
+echo "End diagnostics."
+date
+
