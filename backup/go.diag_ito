@@ -46,7 +46,8 @@
 #PJM -j                     # Write error in standard output file
 #PJM -s                     # Job statistics
 
-module load intel
+#module load intel
+module load netcdf
 export OMP_NUM_THREADS=36
 
 
