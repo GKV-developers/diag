@@ -6,11 +6,20 @@ FFLAGS += -mcmodel=large # Static Memory larger than 2GB
 FFLAGS += -assume byterecl # Assume recl in byte (not word) unit.
 FFLAGS += -i8 # Change default integer type as integer(kind=8).
 #FFLAGS += -warn all -g -traceback -fpe0 -check bounds -check uninit # Debug
+### Usage of FFTW
 INC = 
-LIB = -mkl
-INC += -I/home/pken/include/
-LIB += -L/home/pken/lib/ -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl -lm
+LIB += -mkl
+### Usage of NetCDF
+NETCDF_DIR=/home/pken
+INC += -I$(NETCDF_DIR)/include
+LIB += -L$(NETCDF_DIR)/lib -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl -lm
+FFLAGS += ${INC}
 
+
+### Read Fortran binary GKV output
+FILEIO = diag_rb_fortran
+### Read NetCDF GKV output
+#FILEIO = diag_rb_netcdf
 
 
 SRC = ./src
@@ -24,7 +33,7 @@ diag:	${SRC}/diag_header.f90\
 	${SRC}/diag_geom.f90\
 	${SRC}/diag_intgrl.f90\
 	${SRC}/diag_parity.f90\
-	${SRC}/diag_rb.f90\
+	${SRC}/${FILEIO}.f90\
 	${SRC}/diag_fft.f90\
 	${SRC}/out_textfile.f90\
 	${SRC}/out_netcdf.f90\
@@ -63,10 +72,10 @@ diag:	${SRC}/diag_header.f90\
 	${FC} ${FFLAGS} -c ${SRC}/diag_geom.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_intgrl.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_parity.f90
-	${FC} ${FFLAGS} -c ${SRC}/diag_rb.f90
+	${FC} ${FFLAGS} -c ${SRC}/${FILEIO}.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/diag_fft.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_textfile.f90
-	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC} ${LIB}
+	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_mominxy.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_mominxz.f90
 	${FC} ${FFLAGS} -c ${SRC}/out_mominkxky.f90

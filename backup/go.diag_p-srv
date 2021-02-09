@@ -40,7 +40,7 @@ export KMP_STACKSIZE=6G   # OpenMP stack memory size (per thread)
 
 
 ### Working directory 
-DIR=/home/smaeyama/gkvp/f0.59/gkvp/run/data/
+DIR=/home/smaeyama/gkvp/f0.60/data_SmallGridIO/
 LDM=diag.exe
 
 cd ${PBS_O_WORKDIR}

@@ -59,11 +59,11 @@ MPI_procs=1                       # number of MPI processes (= venode*8 for flat
 
 #module load NECNLC-sx
 ## module load NECNLC-mpi-sx
-module load fftw-sx netcdf-fortran-sx
+module load fftw-sx netcdf-parallelIO-fortran-sx/4.5.2
 
 
 ### Working directory 
-DIR=/data/lng/maeyama/gkvp/f0.59/ITGae-lin
+DIR=/data/lng/maeyama/gkvp/f0.60/data_SmallGridIO
 LDM=diag.exe
 
 

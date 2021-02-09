@@ -8,10 +8,21 @@ FFLAGS += -i8 # Change default integer type as integer(kind=8).
                           # LANG=ja_JP.UTF-8 may cause a problem. export LANG=C
 FFLAGS += -warn all -g -traceback -fpe0 -check bounds -check uninit # Debug
 #OPTRPT = 'optrpt'
-#INC =
-#LIB = -L${FFTW_DIR} -lfftw3 -lm
+
+### Usage of FFTW
 INC =                 ### For MKL wrapper of FFTW
 LIB = -mkl=sequential ### For MKL wrapper of FFTW
+### Usage of NetCDF (module load netcdf)
+FFLAGS += -no-ipo
+INC += -I$(NCDIR)/include
+LIB += -L$(NCDIR)/lib -lnetcdff
+FFLAGS += $(INC)
+
+
+### Read Fortran binary GKV output
+FILEIO = diag_rb_fortran
+### Read NetCDF GKV output
+#FILEIO = diag_rb_netcdf
 
 
 SRC = ./src
@@ -25,7 +36,7 @@ diag:	${SRC}/diag_header.f90\
 	${SRC}/diag_geom.f90\
 	${SRC}/diag_intgrl.f90\
 	${SRC}/diag_parity.f90\
-	${SRC}/diag_rb.f90\
+	${SRC}/${FILEIO}.f90\
 	${SRC}/diag_fft.f90\
 	${SRC}/out_textfile.f90\
 	${SRC}/out_netcdf.f90\
@@ -64,10 +75,10 @@ diag:	${SRC}/diag_header.f90\
 	${FC} ${FFLAGS} -c ${SRC}/diag_geom.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_intgrl.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_parity.f90
-	${FC} ${FFLAGS} -c ${SRC}/diag_rb.f90
+	${FC} ${FFLAGS} -c ${SRC}/${FILEIO}.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/diag_fft.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_textfile.f90
-	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC} ${LIB}
+	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_mominxy.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_mominxz.f90
 	${FC} ${FFLAGS} -c ${SRC}/out_mominkxky.f90
@@ -97,7 +108,7 @@ diag:	${SRC}/diag_header.f90\
 
 	${FC} ${FFLAGS} *.o -o ${PROG} ${LIB}
 
-	rm -f *.o *.mod
+	rm -f *.o *.mod *_genmod.f90
 
 clean:
 	rm -f *.o *.mod *.exe go.diag*.o* go.diag*.i*

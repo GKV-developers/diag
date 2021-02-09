@@ -13,20 +13,28 @@ OPTRPT = 'lst'
 #FFLAGS += -Ksimd_nouse_multiple_structures # Specific option for compiler tcs1.2.26 to avoid slowing down GKV
 #FFLAGS += -Knosch_pre_ra # Specific option for compiler tcs1.2.26 to avoid slowing down GKV
 
+### Usage of FFTW
 ### FFTW-SVE
 FFTW_DIR=/home/apps/r/OSS_CN/fftw-3.3.8/
 INC = -I$(FFTW_DIR)/include
 LIB = -L$(FFTW_DIR)/lib64 -lfftw3 -lm -SSL2
-
-#### FFTW-SPACK (. /vol0001/apps/oss/spack/share/spack/setup-env.sh; spack load fftw) ###
+#### FFTW-SPACK (. /home/apps/oss/spack/share/spack/setup-env.sh; spack load fftw) ###
 #FFTW_DIR=`spack location -i fftw`
 #INC = -I$(FFTW_DIR)/include
 #LIB = -L$(FFTW_DIR)/lib -lfftw3 -lm -SSL2
 
-### NetCDF (. /vol0001/apps/oss/spack/share/spack/setup-env.sh; spack load netcdf-fortran@4.5.2%fj) ###
-NetCDF_DIR=`spack location -i netcdf-fortran@4.5.2%fj`
+### Usage of NetCDF (. /home/apps/oss/spack/share/spack/setup-env.sh; spack load netcdf-fortran%fj) ###
+###   Operation of NetCDF has not yet been checked on Fugaku, Jan 26 2021
+NetCDF_DIR=`spack location -i netcdf-fortran%fj`
 INC += -I$(NetCDF_DIR)/include
 LIB += -L$(NetCDF_DIR)/lib -lnetcdff -lnetcdf -lhdf5_hl -lhdf5
+FFLAGS += $(INC)
+
+
+### Read Fortran binary GKV output
+FILEIO = diag_rb_fortran
+### Read NetCDF GKV output
+#FILEIO = diag_rb_netcdf
 
 
 SRC = ./src
@@ -40,7 +48,7 @@ diag:	${SRC}/diag_header.f90\
 	${SRC}/diag_geom.f90\
 	${SRC}/diag_intgrl.f90\
 	${SRC}/diag_parity.f90\
-	${SRC}/diag_rb.f90\
+	${SRC}/${FILEIO}.f90\
 	${SRC}/diag_fft.f90\
 	${SRC}/out_textfile.f90\
 	${SRC}/out_netcdf.f90\
@@ -79,10 +87,10 @@ diag:	${SRC}/diag_header.f90\
 	${FC} ${FFLAGS} -c ${SRC}/diag_geom.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_intgrl.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_parity.f90
-	${FC} ${FFLAGS} -c ${SRC}/diag_rb.f90
+	${FC} ${FFLAGS} -c ${SRC}/${FILEIO}.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/diag_fft.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_textfile.f90
-	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC} ${LIB}
+	${FC} ${FFLAGS} -c ${SRC}/out_netcdf.f90 ${INC}
 	${FC} ${FFLAGS} -c ${SRC}/out_mominxy.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_mominxz.f90
 	${FC} ${FFLAGS} -c ${SRC}/out_mominkxky.f90

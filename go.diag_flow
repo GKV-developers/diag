@@ -1,11 +1,11 @@
 #!/bin/sh
 
 ###  NOTE  ###
-###  Fugaku supercomputer, Environment III (Riken R-CCS, 2020)
+###  Flow supercomputer Type I sub-system, PRIMEHPC FX1000 (Nagoya Univ, 2020)
 ###
-###  - Computation nodes
+###  - Computation nodes(total 2304 nodes)
 ###      CPU: A64FX (2.0GHz, 12coresx4CMG=48cores, 512bit SIMD) x1 per node
-###      Peak performance: DP 3.072 TFLOPS per node (Boost: 3.3792 TFLOPS)
+###      Peak performance: DP 3.379 TFLOPS per node (Boost: 3.3792 TFLOPS)
 ###      Cache L1: 64 KiB, 4 way
 ###      Cache L1 Bandwidth: 230+ GB/s(load), 115+ GB/s (store)
 ###      Cache L2: 8 MiB, 16 way per CMG(NUMA), 4CMG per node
@@ -25,27 +25,27 @@
 ###                    1MiB Put throughput: 6.35 GB/s
 ###
 ###  - Job class (May 2020)
-###      eap-large : 385 - 27648 nodes, 10 hour, Inf run/Inf submit
-###      eap-small :   1 - 384   nodes, 10 hour, Inf run/Inf submit
-###      eap-int   :   1 - 12    nodes,  6 hour, Inf run/3   submit, interactive
+###      fx-debug  :  1 - 36  nodes,   1 hour,  50 run/300 submit
+###      fx-small  :  1 - 24  nodes, 168 hour, 100 run/300 submit
+###      fx-middle : 12 - 96  nodes,  72 hour,  50 run/300 submit
+###      fx-large  : 96 - 192 nodes,  72 hour,  25 run/300 submit
+###      fx-xlarge : 96 - 768 nodes,  24 hour,   5 run/300 submit
 ###
 ###  - Commands
 ###      (Submit a batch job : "pjsub sub.q") Use shoot script for GKV.
 ###      Check job status    : "pjstat" or "pjstat -E" for step jobs
 ###      Delete job          : "pjdel JOBID"
-###      Show budget info    : "accountj"
-###      Show disk usage     : "accountd"
+###      Show budget info    : "charge"
+###      Show disk usage     : "lfs quota -u (YOUR ACCOUNT ID) /home"
+###                          : "lfs quota -u (YOUR ACCOUNT ID) /data"
 ##############
 
-#PJM --rsc-list "rscunit=rscunit_ft01"
-#PJM --rsc-list "rscgrp=eap-small" # Job class     
-#PJM --rsc-list "node=1"           # Number of nodes
-#PJM --rsc-list "elapse=00:30:00"  # Execute time
-#PJM --mpi "proc=1"                # Number of MPI (= Number of nodes x 4)
-#### --mpi "rank-map-bynode"
-#### --mpi "rank-map-hostfile=rankmapfile.dat"
-#PJM -j                           # Write error in standard output file
-#PJM -s                           # Job statistics
+#PJM --rsc-list "rscgrp=fx-debug"
+#PJM --rsc-list "node=1"       
+#PJM --rsc-list "elapse=00:10:00"
+#PJM --mpi "proc=1"           
+#PJM -j                          
+#PJM -s                           
 
 NUM_NODES=${PJM_NODE}             # Nodes
 NUM_CORES=12                      # Cores per node
@@ -58,17 +58,13 @@ echo "         Cores per node: ${NUM_CORES}"
 echo "          MPI Processes: ${NUM_PROCS}"
 echo " OpenMP threads per MPI: ${OMP_NUM_THREADS}"
 
-
-### For NetCDF
-. /home/apps/oss/spack/share/spack/setup-env.sh
-spack load netcdf-fortran%fj
-
 #export XOS_MMM_L_PAGING_POLICY=demand:demand:demand # For Largepage
 #export PLE_MPI_STD_EMPTYFILE="off" # Suppress stdout of filesize-0
+#module load fftw-tune phdf5 netcdf-c netcdf-fortran
 
 
 ### Working directory 
-DIR=/data/hp150279/u00165/gkvp/f0.60/data_SmallGridIO
+DIR=/data/group1/z43460z/gkvp/f0.60/data_SmallGridIO
 LDM=diag.exe
 
 
