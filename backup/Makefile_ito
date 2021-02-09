@@ -12,8 +12,7 @@ FFLAGS += -warn all -g -traceback -fpe0 -check bounds -check uninit # Debug
 ### Usage of FFTW
 INC =                 ### For MKL wrapper of FFTW
 LIB = -mkl=sequential ### For MKL wrapper of FFTW
-### Usage of NetCDF (module purge; module load netcdf)
-### NetCDF does not properly work on the ITO supercomputer for now, Jan 26 2021
+### Usage of NetCDF (module load netcdf)
 FFLAGS += -no-ipo
 INC += -I$(NCDIR)/include
 LIB += -L$(NCDIR)/lib -lnetcdff
