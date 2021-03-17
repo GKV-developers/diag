@@ -1,0 +1,30 @@
+#!/bin/sh
+#SBATCH -p ppmq
+#SBATCH -N 1
+#SBATCH -J GKV
+#SBATCH -t 24:00:00
+
+
+
+ulimit -s unlimited
+ulimit -n 16384
+
+### Working directory
+DIR=/data/hp150279/u00165/gkvp/f0.60/data_SmallGridIO
+LDM=diag.exe
+
+
+### Run
+mkdir -p ${DIR}/post
+mkdir -p ${DIR}/post/data
+cp ${LDM} ${DIR}/post
+cd ${DIR}/post
+
+echo "Begin diagnostics."
+date
+#mpiexec -n ${NUM_PROCS} ${DIR}/${LDM}
+./${LDM}
+echo "End diagnostics."
+date
+
+

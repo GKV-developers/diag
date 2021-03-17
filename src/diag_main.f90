@@ -38,7 +38,10 @@ PROGRAM diag
   use out_ffinzvm_vtk, only : fkinzvm_vtk, fkinzvm_connect_vtk
 
   use out_mominvtk, only : phiinvtk
-  use out_mominxmf, only : phiinxmf
+  use out_mominxmf, only : mominxmf_coord, &
+                           mominxmf_var_phi, mominxmf_header_phi, &
+                           mominxmf_var_Al,  mominxmf_header_Al,  &
+                           mominxmf_var_mom, mominxmf_header_mom
   use out_mominrz, only : phiinrz
 
   use out_triinkxky, only : triinkxky
@@ -298,20 +301,30 @@ PROGRAM diag
 !    end do
 !
 !
-!!= example to write moments in xyz =
-    write(*,*) "OUTPUT : phiinvtk* phiinxmf* "
+!= example to write moments in xyz =
+    write(*,*) "OUTPUT : phiinxmf* "
     loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
     loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
     loop_end = loop_phi_end(enum)
+    !- XDFM (.xmf) file describes treatment of binary data, in extensible Markup Language (XML).
+    call mominxmf_coord                                      ! output coordinate binary
+    call mominxmf_var_phi( loop_sta, loop_end, loop_skp )    ! output phi binary
+    call mominxmf_header_phi( loop_sta, loop_end, loop_skp ) ! output phiinxmf_header_*.xmf
+    !call mominxmf_var_Al( loop_sta, loop_end, loop_skp )     ! output Al binary
+    !call mominxmf_header_Al( loop_sta, loop_end, loop_skp )  ! output Alinxmf_header_*.xmf
+    !do is = 0, ns-1
+    !  do imom = 0, nmom-1
+    !    call mominxmf_var_mom( imom, is, loop_sta, loop_end, loop_skp ) ! output mom binary
+    !    call mominxmf_header_mom( imom, is, loop_sta, loop_end, loop_skp ) 
+    !                                                         ! output mominxmf_header_*.xmf
+    !  end do
+    !end do
+!!
+!!    !- Output XML-based VTK format is also available -
 !!    flag=1; call phiinvtk( flag, loop_sta, loop_end, loop_skp )  ! output coord&var(fluxtube)
-!    flag=3; call phiinvtk( flag, loop_sta, loop_end, loop_skp )  ! output coord&var(full torus)
+!!    flag=3; call phiinvtk( flag, loop_sta, loop_end, loop_skp )  ! output coord&var(full torus)
 !!    flag=5; call phiinvtk( flag, loop_sta, loop_end, loop_skp )  ! output coord&var(field aligned)
-!
-!    flag=0; call phiinxmf( flag, loop_sta, loop_end, loop_skp )  ! output coordinate(fluxtube)
-!    flag=1; call phiinxmf( flag, loop_sta, loop_end, loop_skp )  ! output var&header(fluxtube)
-    flag=2; call phiinxmf( flag, loop_sta, loop_end, loop_skp )  ! output coordinate(full torus)
-    flag=3; call phiinxmf( flag, loop_sta, loop_end, loop_skp )  ! output var&header(full torus)
-!
+!!
 !
 != example to write moments in xy =
     write(*,*) "OUTPUT : phiinrz* "

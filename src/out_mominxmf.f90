@@ -10,7 +10,10 @@ MODULE out_mominxmf
 
   private
 
-  public phiinxmf
+  public  mominxmf_coord, &
+          mominxmf_var_phi, mominxmf_header_phi, &
+          mominxmf_var_Al,  mominxmf_header_Al,  &
+          mominxmf_var_mom, mominxmf_header_mom
 
   integer, parameter :: n_alp = 6
   ! Adapt a flux tube as 1/n_alp torus for visualization.
@@ -22,121 +25,19 @@ MODULE out_mominxmf
  CONTAINS
 
 
-SUBROUTINE phiinxmf( flag, loop_sta, loop_end, loop_skip )
+SUBROUTINE mominxmf_coord
 !-------------------------------------------------------------------------------
 !
 !     Output phi in (xx,yy,zz,time) in XMF binary format
 !                                                   (S. Maeyama, 30 Oct 2020)
 !
 !-------------------------------------------------------------------------------
-  use diag_rb, only : rb_phi_gettime, rb_phi_loop
-
-  integer, intent(in) :: flag ! 0:coord(fluxtube), 1:var&header(fluxtube)
-                              ! 2:coord(fulltorus), 3:var&header(fulltorus)
-  integer, intent(in) :: loop_sta, loop_end, loop_skip
-
   real(kind=DP) :: time
   real(kind=DP), dimension(:,:,:,:), allocatable :: coords
-  real(kind=DP), dimension(:,:,:), allocatable :: phi_xyz
-  complex(kind=DP), dimension(:,:,:), allocatable :: phi
-  character(len=8) :: cloop
   character(len=3) :: c_alp
-  integer :: loop, i_alp
+  integer :: i_alp
 
     allocate(coords(3,0:2*nxw,0:2*nyw,-nzw:nzw))
-    allocate(phi_xyz(0:2*nxw,0:2*nyw,-nzw:nzw))
-    allocate(phi(-nx:nx,0:global_ny,-global_nz:global_nz-1))
-
-    if ( flag == 0 ) then      ! output coordinates
-
-      != set coordinates =
-      i_alp = 0
-      call cartesian_coordinates( i_alp, coords )
-
-      open( omominxyz, file="./data/phiinxmf_tube_xcoord.bin", status="replace",  &
-                       action="write", form="unformatted", access="stream",       &
-                       convert="LITTLE_ENDIAN" )
-        write( omominxyz ) real(coords(1,:,:,:), kind=4)
-      close( omominxyz )
-      open( omominxyz, file="./data/phiinxmf_tube_ycoord.bin", status="replace",  &
-                       action="write", form="unformatted", access="stream",       &
-                       convert="LITTLE_ENDIAN" )
-        write( omominxyz ) real(coords(2,:,:,:), kind=4)
-      close( omominxyz )
-      open( omominxyz, file="./data/phiinxmf_tube_zcoord.bin", status="replace",  &
-                       action="write", form="unformatted", access="stream",       &
-                       convert="LITTLE_ENDIAN" )
-        write( omominxyz ) real(coords(3,:,:,:), kind=4)
-      close( omominxyz )
-
-    else if ( flag == 1 ) then ! output variable
-
-      do loop = loop_sta, loop_end, loop_skip
-        write( cloop, '(i8.8)' ) loop
-
-        call rb_phi_loop( loop, phi )
-        call phi_kxkyz2xyz_fluxtube( phi, phi_xyz )
-        open( omominxyz, file="./data/phiinxmf_tube_var"//cloop//".bin", status="replace",  &
-                         action="write", form="unformatted", access="stream",               &
-                         convert="LITTLE_ENDIAN" )
-          write( omominxyz ) real(phi_xyz, kind=4)
-        close( omominxyz )
-
-      end do
-
-      open( omominxyz, file="./data/phiinxmf_tube_header.xmf" )
-
-        call rb_phi_gettime( loop_sta, time )
-        write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
-        write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
-        write( omominxyz, '(a)' ) ''
-        write( omominxyz, '(a)' ) '<Xdmf>'
-        write( omominxyz, '(a)' ) '<Domain>'
-        write( omominxyz, '(a)' ) ''
-        write( omominxyz, '(a)' ) '<Grid Name="phi" GridType="Collection" CollectionType="Temporal">'
-        write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
-        write( omominxyz, '(a)' ) '<DataItem Format="XML" NumberType="Float" Dimensions="3">'
-        write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
-        write( omominxyz, '(a)' ) '</DataItem>'
-        write( omominxyz, '(a)' ) '</Time>'
-        write( omominxyz, '(a)' ) ''
-        do loop = loop_sta, loop_end, loop_skip
-          write( cloop, '(i8.8)' ) loop
-          !write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
-          write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'">'
-          write( omominxyz, '(a,3i17,a)' ) '<Topology Type="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
-          write( omominxyz, '(a)' ) '</Topology>'
-          write( omominxyz, '(a)' ) '<Geometry Type="X_Y_Z">'
-          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-          write( omominxyz, '(a)' ) '  phiinxmf_tube_xcoord.bin'
-          write( omominxyz, '(a)' ) '</DataStructure>'
-          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-          write( omominxyz, '(a)' ) '  phiinxmf_tube_ycoord.bin'
-          write( omominxyz, '(a)' ) '</DataStructure>'
-          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-          write( omominxyz, '(a)' ) '  phiinxmf_tube_zcoord.bin'
-          write( omominxyz, '(a)' ) '</DataStructure>'
-          write( omominxyz, '(a)' ) '</Geometry>'
-          write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="phi">'
-          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-          write( omominxyz, '(a)' ) '  phiinxmf_tube_var'//cloop//'.bin'
-          write( omominxyz, '(a)' ) '</DataStructure>'
-          write( omominxyz, '(a)' ) '</Attribute>'
-          write( omominxyz, '(a)' ) '</Grid>'
-          !write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
-          write( omominxyz, '(a)' ) ''
-        end do
-        write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
-        write( omominxyz, '(a)' ) '</Domain>'
-        write( omominxyz, '(a)' ) '</Xdmf>'
-
-      close( omominxyz )
-
-    else if ( flag == 2 ) then      ! output coordinates
 
       do i_alp = 0, n_alp-1
         write( c_alp, '(i3.3)' ) i_alp
@@ -144,106 +45,649 @@ SUBROUTINE phiinxmf( flag, loop_sta, loop_end, loop_skip )
         != set coordinates =
         call cartesian_coordinates( i_alp, coords )
 
-        open( omominxyz, file="./data/phiinxmf_full_alp"//c_alp//"_xcoord.bin", status="replace",  &
-                         action="write", form="unformatted", access="stream",       &
-                         convert="LITTLE_ENDIAN" )
+        open( omominxyz, file='./data/mominxmf_alp'//c_alp//'_xcoord.bin', status='replace',  &
+                         action='write', form='unformatted', access='stream',       &
+                         convert='LITTLE_ENDIAN' )
           write( omominxyz ) real(coords(1,:,:,:), kind=4)
         close( omominxyz )
-        open( omominxyz, file="./data/phiinxmf_full_alp"//c_alp//"_ycoord.bin", status="replace",  &
-                         action="write", form="unformatted", access="stream",       &
-                         convert="LITTLE_ENDIAN" )
+        open( omominxyz, file='./data/mominxmf_alp'//c_alp//'_ycoord.bin', status='replace',  &
+                         action='write', form='unformatted', access='stream',       &
+                         convert='LITTLE_ENDIAN' )
           write( omominxyz ) real(coords(2,:,:,:), kind=4)
         close( omominxyz )
-        open( omominxyz, file="./data/phiinxmf_full_alp"//c_alp//"_zcoord.bin", status="replace",  &
-                         action="write", form="unformatted", access="stream",       &
-                         convert="LITTLE_ENDIAN" )
+        open( omominxyz, file='./data/mominxmf_alp'//c_alp//'_zcoord.bin', status='replace',  &
+                         action='write', form='unformatted', access='stream',       &
+                         convert='LITTLE_ENDIAN' )
           write( omominxyz ) real(coords(3,:,:,:), kind=4)
         close( omominxyz )
 
       end do
 
-    else if ( flag == 3 ) then ! output variable
-
-      do loop = loop_sta, loop_end, loop_skip
-        write( cloop, '(i8.8)' ) loop
-
-        call rb_phi_loop( loop, phi )
-        call phi_kxkyz2xyz_fluxtube( phi, phi_xyz )
-        open( omominxyz, file="./data/phiinxmf_full_var"//cloop//".bin", status="replace",  &
-                         action="write", form="unformatted", access="stream",               &
-                         convert="LITTLE_ENDIAN" )
-          write( omominxyz ) real(phi_xyz, kind=4)
-        close( omominxyz )
-
-      end do
-
-      open( omominxyz, file="./data/phiinxmf_full_header.xmf" )
-
-        call rb_phi_gettime( loop_sta, time )
-        write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
-        write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
-        write( omominxyz, '(a)' ) ''
-        write( omominxyz, '(a)' ) '<Xdmf>'
-        write( omominxyz, '(a)' ) '<Domain>'
-        write( omominxyz, '(a)' ) ''
-        write( omominxyz, '(a)' ) '<Grid Name="phi" GridType="Collection" CollectionType="Temporal">'
-        write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
-        write( omominxyz, '(a)' ) '<DataItem Format="XML" NumberType="Float" Dimensions="3">'
-        write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
-        write( omominxyz, '(a)' ) '</DataItem>'
-        write( omominxyz, '(a)' ) '</Time>'
-        write( omominxyz, '(a)' ) ''
-        do loop = loop_sta, loop_end, loop_skip
-          write( cloop, '(i8.8)' ) loop
-          write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
-          do i_alp = 0, n_alp-1
-            write( c_alp, '(i3.3)' ) i_alp
-            write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'_alp'//c_alp//'">'
-            write( omominxyz, '(a,3i17,a)' ) '<Topology Type="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
-            write( omominxyz, '(a)' ) '</Topology>'
-            write( omominxyz, '(a)' ) '<Geometry Type="X_Y_Z">'
-            write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                             2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-            write( omominxyz, '(a)' ) '  phiinxmf_full_alp'//c_alp//'_xcoord.bin'
-            write( omominxyz, '(a)' ) '</DataStructure>'
-            write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                             2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-            write( omominxyz, '(a)' ) '  phiinxmf_full_alp'//c_alp//'_ycoord.bin'
-            write( omominxyz, '(a)' ) '</DataStructure>'
-            write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                             2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-            write( omominxyz, '(a)' ) '  phiinxmf_full_alp'//c_alp//'_zcoord.bin'
-            write( omominxyz, '(a)' ) '</DataStructure>'
-            write( omominxyz, '(a)' ) '</Geometry>'
-            write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="phi">'
-            write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
-                                             2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
-            write( omominxyz, '(a)' ) '  phiinxmf_full_var'//cloop//'.bin'
-            write( omominxyz, '(a)' ) '</DataStructure>'
-            write( omominxyz, '(a)' ) '</Attribute>'
-            write( omominxyz, '(a)' ) '</Grid>'
-          end do
-          write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
-          write( omominxyz, '(a)' ) ''
-        end do
-        write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
-        write( omominxyz, '(a)' ) '</Domain>'
-        write( omominxyz, '(a)' ) '</Xdmf>'
-
-      close( omominxyz )
-
-    else
-
-      write(*,*) "flag in phiinxmf is invalid !  flag =", flag
-      stop
-
-    end if
-
     deallocate(coords)
+
+END SUBROUTINE mominxmf_coord
+
+
+SUBROUTINE mominxmf_var_phi(loop_sta, loop_end, loop_skip )
+!-------------------------------------------------------------------------------
+!
+!     Output phi in (xx,yy,zz,time) in XMF binary format
+!                                                   (S. Maeyama, 30 Oct 2020)
+!
+!-------------------------------------------------------------------------------
+  use diag_rb, only : rb_phi_loop
+
+  integer, intent(in) :: loop_sta, loop_end, loop_skip
+
+  real(kind=DP) :: time
+  real(kind=DP), dimension(:,:,:), allocatable :: phi_xyz
+  complex(kind=DP), dimension(:,:,:), allocatable :: phi
+  character(len=8) :: cloop
+  integer :: loop
+
+    allocate(phi_xyz(0:2*nxw,0:2*nyw,-nzw:nzw))
+    allocate(phi(-nx:nx,0:global_ny,-global_nz:global_nz-1))
+
+    do loop = loop_sta, loop_end, loop_skip
+      write( cloop, '(i8.8)' ) loop
+      call rb_phi_loop( loop, phi )
+      call phi_kxkyz2xyz_fluxtube( phi, phi_xyz )
+      open( omominxyz, file='./data/phiinxmf_var'//cloop//'.bin', status='replace',  &
+                       action='write', form='unformatted', access='stream',               &
+                       convert='LITTLE_ENDIAN' )
+        write( omominxyz ) real(phi_xyz, kind=4)
+      close( omominxyz )
+    end do
+
     deallocate(phi_xyz)
     deallocate(phi)
 
-END SUBROUTINE phiinxmf
+END SUBROUTINE mominxmf_var_phi
+
+
+SUBROUTINE mominxmf_header_phi( loop_sta, loop_end, loop_skip )
+!-------------------------------------------------------------------------------
+!
+!     Output phi in (xx,yy,zz,time) in XMF binary format
+!                                                   (S. Maeyama, 30 Oct 2020)
+!
+!-------------------------------------------------------------------------------
+  use diag_geom, only : lx, ly, lz
+  use diag_rb, only : rb_phi_gettime
+
+  integer, intent(in) :: loop_sta, loop_end, loop_skip
+
+  real(kind=DP) :: time
+  character(len=8) :: cloop
+  character(len=3) :: c_alp
+  integer :: loop, i_alp
+
+    open( omominxyz, file='./data/phiinxmf_header_align.xmf' )
+      call rb_phi_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="phi" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        !write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DCORECTMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+        write( omominxyz, '(a)' ) '</Topology>'
+        write( omominxyz, '(a)' ) '<Geometry GeometryType="ORIGIN_DXDYDZ">'
+        write( omominxyz, '(a)' ) '<DataItem Name="Origin" Format="XML" NumberType="Float" Dimensions="3">'
+        write( omominxyz, '(3g17.7e3)' ) 0.d0, 0.d0, 0.d0
+        write( omominxyz, '(a)' ) '</DataItem>'
+        write( omominxyz, '(a)' ) '<DataItem Name="DxDyDz" Format="XML" NumberType="Float" Dimensions="3">'
+        write( omominxyz, '(3g17.7e3)' ) max(2*ly,2*lx)/(2*nzw), (2*ly)/(2*nyw), (2*lx)/(2*nxw)
+        write( omominxyz, '(a)' ) '</DataItem>'
+        write( omominxyz, '(a)' ) '</Geometry>'
+        write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="phi">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  phiinxmf_var'//cloop//'.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Attribute>'
+        write( omominxyz, '(a)' ) '</Grid>'
+        !write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+    open( omominxyz, file='./data/phiinxmf_header_tube.xmf' )
+      call rb_phi_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="phi" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        !write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+        write( omominxyz, '(a)' ) '</Topology>'
+        write( omominxyz, '(a)' ) '<Geometry GeometryType="X_Y_Z">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_xcoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_ycoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_zcoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Geometry>'
+        write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="phi">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  phiinxmf_var'//cloop//'.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Attribute>'
+        write( omominxyz, '(a)' ) '</Grid>'
+        !write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+    open( omominxyz, file='./data/phiinxmf_header_full.xmf' )
+      call rb_phi_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="phi" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        do i_alp = 0, n_alp-1
+          write( c_alp, '(i3.3)' ) i_alp
+          write( omominxyz, '(a)' ) '<Grid Name="phi_var'//cloop//'_alp'//c_alp//'">'
+          write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+          write( omominxyz, '(a)' ) '</Topology>'
+          write( omominxyz, '(a)' ) '<Geometry GeometryType="X_Y_Z">'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_xcoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_ycoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_zcoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a)' ) '</Geometry>'
+          write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="phi">'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  phiinxmf_var'//cloop//'.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a)' ) '</Attribute>'
+          write( omominxyz, '(a)' ) '</Grid>'
+        end do
+        write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+END SUBROUTINE mominxmf_header_phi
+
+
+SUBROUTINE mominxmf_var_Al(loop_sta, loop_end, loop_skip )
+!-------------------------------------------------------------------------------
+!
+!     Output Al in (xx,yy,zz,time) in XMF binary format
+!                                                   (S. Maeyama, 30 Oct 2020)
+!
+!-------------------------------------------------------------------------------
+  use diag_rb, only : rb_Al_loop
+
+  integer, intent(in) :: loop_sta, loop_end, loop_skip
+
+  real(kind=DP) :: time
+  real(kind=DP), dimension(:,:,:), allocatable :: Al_xyz
+  complex(kind=DP), dimension(:,:,:), allocatable :: Al
+  character(len=8) :: cloop
+  integer :: loop
+
+    allocate(Al_xyz(0:2*nxw,0:2*nyw,-nzw:nzw))
+    allocate(Al(-nx:nx,0:global_ny,-global_nz:global_nz-1))
+
+    do loop = loop_sta, loop_end, loop_skip
+      write( cloop, '(i8.8)' ) loop
+      call rb_Al_loop( loop, Al )
+      call phi_kxkyz2xyz_fluxtube( Al, Al_xyz )
+      open( omominxyz, file='./data/Alinxmf_var'//cloop//'.bin', status='replace',  &
+                       action='write', form='unformatted', access='stream',               &
+                       convert='LITTLE_ENDIAN' )
+        write( omominxyz ) real(Al_xyz, kind=4)
+      close( omominxyz )
+    end do
+
+    deallocate(Al_xyz)
+    deallocate(Al)
+
+END SUBROUTINE mominxmf_var_Al
+
+
+SUBROUTINE mominxmf_header_Al( loop_sta, loop_end, loop_skip )
+!-------------------------------------------------------------------------------
+!
+!     Output Al in (xx,yy,zz,time) in XMF binary format
+!                                                   (S. Maeyama, 30 Oct 2020)
+!
+!-------------------------------------------------------------------------------
+  use diag_geom, only : lx, ly, lz
+  use diag_rb, only : rb_Al_gettime
+
+  integer, intent(in) :: loop_sta, loop_end, loop_skip
+
+  real(kind=DP) :: time
+  character(len=8) :: cloop
+  character(len=3) :: c_alp
+  integer :: loop, i_alp
+
+    open( omominxyz, file='./data/Alinxmf_header_align.xmf' )
+      call rb_Al_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="Al" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        !write( omominxyz, '(a)' ) '<Grid Name="Al_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        write( omominxyz, '(a)' ) '<Grid Name="Al_var'//cloop//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DCORECTMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+        write( omominxyz, '(a)' ) '</Topology>'
+        write( omominxyz, '(a)' ) '<Geometry GeometryType="ORIGIN_DXDYDZ">'
+        write( omominxyz, '(a)' ) '<DataItem Name="Origin" Format="XML" NumberType="Float" Dimensions="3">'
+        write( omominxyz, '(3g17.7e3)' ) 0.d0, 0.d0, 0.d0
+        write( omominxyz, '(a)' ) '</DataItem>'
+        write( omominxyz, '(a)' ) '<DataItem Name="DxDyDz" Format="XML" NumberType="Float" Dimensions="3">'
+        write( omominxyz, '(3g17.7e3)' ) max(2*ly,2*lx)/(2*nzw), (2*ly)/(2*nyw), (2*lx)/(2*nxw)
+        write( omominxyz, '(a)' ) '</DataItem>'
+        write( omominxyz, '(a)' ) '</Geometry>'
+        write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="Al">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  Alinxmf_var'//cloop//'.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Attribute>'
+        write( omominxyz, '(a)' ) '</Grid>'
+        !write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+    open( omominxyz, file='./data/Alinxmf_header_tube.xmf' )
+      call rb_Al_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="Al" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        !write( omominxyz, '(a)' ) '<Grid Name="Al_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        write( omominxyz, '(a)' ) '<Grid Name="Al_var'//cloop//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+        write( omominxyz, '(a)' ) '</Topology>'
+        write( omominxyz, '(a)' ) '<Geometry GeometryType="X_Y_Z">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_xcoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_ycoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_zcoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Geometry>'
+        write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="Al">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  Alinxmf_var'//cloop//'.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Attribute>'
+        write( omominxyz, '(a)' ) '</Grid>'
+        !write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+    open( omominxyz, file='./data/Alinxmf_header_full.xmf' )
+      call rb_Al_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="Al" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        write( omominxyz, '(a)' ) '<Grid Name="Al_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        do i_alp = 0, n_alp-1
+          write( c_alp, '(i3.3)' ) i_alp
+          write( omominxyz, '(a)' ) '<Grid Name="Al_var'//cloop//'_alp'//c_alp//'">'
+          write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+          write( omominxyz, '(a)' ) '</Topology>'
+          write( omominxyz, '(a)' ) '<Geometry GeometryType="X_Y_Z">'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_xcoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_ycoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_zcoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a)' ) '</Geometry>'
+          write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="Al">'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  Alinxmf_var'//cloop//'.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a)' ) '</Attribute>'
+          write( omominxyz, '(a)' ) '</Grid>'
+        end do
+        write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+END SUBROUTINE mominxmf_header_Al
+
+
+SUBROUTINE mominxmf_var_mom( imom, is, loop_sta, loop_end, loop_skip )
+!-------------------------------------------------------------------------------
+!
+!     Output mom in (xx,yy,zz,time) in XMF binary format
+!                                                   (S. Maeyama, 30 Oct 2020)
+!
+!-------------------------------------------------------------------------------
+  use diag_rb, only : rb_mom_imomisloop
+
+  integer, intent(in) :: imom, is, loop_sta, loop_end, loop_skip
+
+  real(kind=DP), dimension(:,:,:), allocatable :: mom_xyz
+  complex(kind=DP), dimension(:,:,:), allocatable :: mom
+  character(len=8) :: cloop
+  character(len=1) :: cimom
+  character(len=1) :: cis
+  integer :: loop
+
+    allocate(mom_xyz(0:2*nxw,0:2*nyw,-nzw:nzw))
+    allocate(mom(-nx:nx,0:global_ny,-global_nz:global_nz-1))
+    write( cimom, '(i1.1)' ) imom
+    write( cis, '(i1.1)' ) is
+
+    do loop = loop_sta, loop_end, loop_skip
+      write( cloop, '(i8.8)' ) loop
+      call rb_mom_imomisloop( imom, is, loop, mom )
+      call phi_kxkyz2xyz_fluxtube( mom, mom_xyz )
+      open( omominxyz, file='./data/mominxmf_mom'//cimom//'s'//cis//'_var'//cloop//'.bin', status='replace',  &
+                       action='write', form='unformatted', access='stream',               &
+                       convert='LITTLE_ENDIAN' )
+        write( omominxyz ) real(mom_xyz, kind=4)
+      close( omominxyz )
+    end do
+
+    deallocate(mom_xyz)
+    deallocate(mom)
+
+END SUBROUTINE mominxmf_var_mom
+
+
+SUBROUTINE mominxmf_header_mom( imom, is, loop_sta, loop_end, loop_skip )
+!-------------------------------------------------------------------------------
+!
+!     Output phi in (xx,yy,zz,time) in XMF binary format
+!                                                   (S. Maeyama, 30 Oct 2020)
+!
+!-------------------------------------------------------------------------------
+  use diag_geom, only : lx, ly, lz
+  use diag_rb, only : rb_phi_gettime
+
+  integer, intent(in) :: imom, is, loop_sta, loop_end, loop_skip
+
+  real(kind=DP) :: time
+  character(len=8) :: cloop
+  character(len=3) :: c_alp
+  character(len=1) :: cimom
+  character(len=1) :: cis
+  integer :: loop, i_alp
+
+    write( cimom, '(i1.1)' ) imom
+    write( cis, '(i1.1)' ) is
+
+    open( omominxyz, file='./data/mominxmf_mom'//cimom//'s'//cis//'_header_align.xmf' )
+      call rb_phi_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        !write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DCORECTMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+        write( omominxyz, '(a)' ) '</Topology>'
+        write( omominxyz, '(a)' ) '<Geometry GeometryType="ORIGIN_DXDYDZ">'
+        write( omominxyz, '(a)' ) '<DataItem Name="Origin" Format="XML" NumberType="Float" Dimensions="3">'
+        write( omominxyz, '(3g17.7e3)' ) 0.d0, 0.d0, 0.d0
+        write( omominxyz, '(a)' ) '</DataItem>'
+        write( omominxyz, '(a)' ) '<DataItem Name="DxDyDz" Format="XML" NumberType="Float" Dimensions="3">'
+        write( omominxyz, '(3g17.7e3)' ) max(2*ly,2*lx)/(2*nzw), (2*ly)/(2*nyw), (2*lx)/(2*nxw)
+        write( omominxyz, '(a)' ) '</DataItem>'
+        write( omominxyz, '(a)' ) '</Geometry>'
+        write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="mom'//cimom//'s'//cis//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_mom'//cimom//'s'//cis//'_var'//cloop//'.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Attribute>'
+        write( omominxyz, '(a)' ) '</Grid>'
+        !write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+    open( omominxyz, file='./data/mominxmf_mom'//cimom//'s'//cis//'_header_tube.xmf' )
+      call rb_phi_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        !write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+        write( omominxyz, '(a)' ) '</Topology>'
+        write( omominxyz, '(a)' ) '<Geometry GeometryType="X_Y_Z">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_xcoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_ycoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_alp000_zcoord.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Geometry>'
+        write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="mom'//cimom//'s'//cis//'">'
+        write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                         2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+        write( omominxyz, '(a)' ) '  mominxmf_mom'//cimom//'s'//cis//'_var'//cloop//'.bin'
+        write( omominxyz, '(a)' ) '</DataStructure>'
+        write( omominxyz, '(a)' ) '</Attribute>'
+        write( omominxyz, '(a)' ) '</Grid>'
+        !write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+    open( omominxyz, file='./data/mominxmf_mom'//cimom//'s'//cis//'_header_full.xmf' )
+      call rb_phi_gettime( loop_sta, time )
+      write( omominxyz, '(a)' ) '<?xml version="1.0"?>'
+      write( omominxyz, '(a)' ) '<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd">'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Xdmf>'
+      write( omominxyz, '(a)' ) '<Domain>'
+      write( omominxyz, '(a)' ) ''
+      write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'" GridType="Collection" CollectionType="Temporal">'
+      write( omominxyz, '(a)' ) '<Time TimeType="HyperSlab">'
+      write( omominxyz, '(a)' ) '<DataItem Name="Time" Format="XML" NumberType="Float" Dimensions="3">'
+      write( omominxyz, '(2g17.7e3,i17)' ) time, dtout_ptn*real(loop_skip, kind=DP), int((loop_end-loop_sta)/loop_skip)+1
+      write( omominxyz, '(a)' ) '</DataItem>'
+      write( omominxyz, '(a)' ) '</Time>'
+      write( omominxyz, '(a)' ) ''
+      do loop = loop_sta, loop_end, loop_skip
+        write( cloop, '(i8.8)' ) loop
+        write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        do i_alp = 0, n_alp-1
+          write( c_alp, '(i3.3)' ) i_alp
+          write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'_alp'//c_alp//'">'
+          write( omominxyz, '(a,3i17,a)' ) '<Topology TopologyType="3DSMesh" Dimensions="', 2*nzw+1, 2*nyw+1, 2*nxw+1, '">'
+          write( omominxyz, '(a)' ) '</Topology>'
+          write( omominxyz, '(a)' ) '<Geometry GeometryType="X_Y_Z">'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_xcoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_ycoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_alp'//c_alp//'_zcoord.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a)' ) '</Geometry>'
+          write( omominxyz, '(a)' ) '<Attribute Active="1" Type="Scalar" Center="Node" Name="mom'//cimom//'s'//cis//'">'
+          write( omominxyz, '(a,3i17,a)' ) '<DataStructure DataType="Float" Precision="4" Dimensions="',  &
+                                           2*nzw+1, 2*nyw+1, 2*nxw+1, '" Format="Binary" Endian="Little">'
+          write( omominxyz, '(a)' ) '  mominxmf_mom'//cimom//'s'//cis//'_var'//cloop//'.bin'
+          write( omominxyz, '(a)' ) '</DataStructure>'
+          write( omominxyz, '(a)' ) '</Attribute>'
+          write( omominxyz, '(a)' ) '</Grid>'
+        end do
+        write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Spatial" -->'
+        write( omominxyz, '(a)' ) ''
+      end do
+      write( omominxyz, '(a)' ) '</Grid><!-- End GridType="Collection" CollectionType="Temporal" -->'
+      write( omominxyz, '(a)' ) '</Domain>'
+      write( omominxyz, '(a)' ) '</Xdmf>'
+    close( omominxyz )
+
+END SUBROUTINE mominxmf_header_mom
+
+
 
 
 SUBROUTINE phi_kxkyz2xyz_fluxtube( phi, phi_xyz )
@@ -350,10 +794,10 @@ SUBROUTINE cartesian_coordinates_salpha( coords, i_alp, q_0, s_hat, eps_r )
   integer :: mx, my, iz
 
     rho = pi * eps_r / (q_0 * ly * n_alp) ! = Larmor radius rho/r_major
-    write(*,*) "# Larmor radius rho/r_major = ", rho
+    write(*,*) '# Larmor radius rho/r_major = ', rho
     if (lx*rho > eps_r) then
-      write(*,*) "# WARNING in out_mominvtk. lx*rho < eps_r is recommended. Set larger n_alp."
-      write(*,*) "# lx=",lx,", rho=",rho,", eps_r=",eps_r,", n_alp=",n_alp 
+      write(*,*) '# WARNING in out_mominvtk. lx*rho < eps_r is recommended. Set larger n_alp.'
+      write(*,*) '# lx=',lx,', rho=',rho,', eps_r=',eps_r,', n_alp=',n_alp 
     end if
 
     wdx = lx / real( nxw, kind=DP )
@@ -406,10 +850,10 @@ SUBROUTINE cartesian_coordinates_miller( coords, i_alp, q_0, s_hat, eps_r, &
   integer :: mx, my, iz
 
     rho = pi * eps_r / (q_0 * ly * n_alp) ! = Larmor radius rho/r_major
-    write(*,*) "# Larmor radius rho/r_major = ", rho
+    write(*,*) '# Larmor radius rho/r_major = ', rho
     if (lx*rho > eps_r) then
-      write(*,*) "# WARNING in out_mominvtk. lx*rho < eps_r is recommended. Set larger n_alp."
-      write(*,*) "# lx=",lx,", rho=",rho,", eps_r=",eps_r,", n_alp=",n_alp 
+      write(*,*) '# WARNING in out_mominvtk. lx*rho < eps_r is recommended. Set larger n_alp.'
+      write(*,*) '# lx=',lx,', rho=',rho,', eps_r=',eps_r,', n_alp=',n_alp 
     end if
 
     wdx = lx / real( nxw, kind=DP )
