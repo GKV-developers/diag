@@ -47,7 +47,7 @@ MODULE diag_geom
                                           tau,  &    ! T-ratio
                                          dns1
   real(kind=DP) :: dv, cfsrf, lambda_i, beta, q_0, q_bar, tau_ad, vmax
-  character(len=8)  :: equib_type
+  character(len=15) :: equib_type
   real(kind=DP) :: r_minor = 84._DP, s_hat
   real(kind=DP) :: eps_r
   real(kind=DP) :: rdeps00, eps_hor, lprd, mprd, lmmq, malpha
@@ -79,6 +79,8 @@ SUBROUTINE geom_init( inum )
   real(kind=DP) :: lz_l, domgdz, domgdx, domgdy, theta, phi_ax
   real(kind=DP) :: s_input, s_0      ! radial label of fluxtube center 
   integer       :: isw, nss, ntheta, nzeta
+!- for s-alpha model with Shafranov shift
+  real(kind=DP) ::  p_total, dp_totaldx, beta_total, alpha_MHD
 !- for VMEC -
   namelist /vmecp/ s_input, nss, ntheta, nzeta
 !------------
@@ -172,6 +174,7 @@ SUBROUTINE geom_init( inum )
 
     else if( trim(equib_type) == "analytic"  .or.  &
              trim(equib_type) == "s-alpha"   .or.  &
+             trim(equib_type) == "s-alpha-shift"   .or.  &
              trim(equib_type) == "circ-MHD" ) then
 
       read(inml,nml=confp)
@@ -292,14 +295,31 @@ SUBROUTINE geom_init( inum )
           end do
         end do
 
-      else if( trim(equib_type) == "s-alpha"  ) then
+      else if( trim(equib_type) == "s-alpha" .or. trim(equib_type) == "s-alpha-shift" ) then
+
+        if (trim(equib_type) == "s-alpha") then
+          !--- s-alpha model without Shafranov shift -
+          alpha_MHD = 0._DP
+        else if (trim(equib_type) == "s-alpha-shift") then
+          !--- s-alpha model with Shafranov shift ----
+          p_total = 0._DP
+          dp_totaldx = 0._DP
+          beta_total = 0._DP
+          do is = 0, ns-1
+            p_total = p_total + fcs(is) * tau(is) / Znum(is)
+            dp_totaldx = dp_totaldx - fcs(is) * tau(is) / Znum(is) * (R0_Ln(is) + R0_Lt(is))
+            beta_total = beta_total + 2._DP * beta * fcs(is) * tau(is) / Znum(is)
+          end do
+          alpha_MHD = - q_0**2 * beta_total * dp_totaldx / p_total
+        end if
 
         gomg(iz)   = 1._DP - eps_r * cos( gzz(iz) )        ! s-alpha with eps-expansion
         !gomg(iz)   = 1._DP / ( 1._DP + eps_r * cos( gzz(iz) ) ) ! for benchmark
         grootg(iz) = q_0 / gomg(iz)
         do my = 0, global_ny
           do mx = -nx, nx
-            gksq(mx,my,iz) = ( kx(mx) + s_hat * gzz(iz) * gky(my) )**2 + gky(my)**2
+            gksq(mx,my,iz) = ( kx(mx) + ( s_hat * gzz(iz) - alpha_MHD*sin(gzz(iz)) ) &
+                             * gky(my) )**2 + gky(my)**2 ! with Shafranov shift
           end do
         end do
 
