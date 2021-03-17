@@ -54,7 +54,7 @@ SUBROUTINE phiinnetcdf
       write( cnum, fmt="(i3.3)" ) inum
 
       != Create file
-      ierr_nf90=nf90_create(path="./data/phi."//cnum//".nc", cmode=NF90_CLOBBER, ncid=ncid_out1)!, &
+      ierr_nf90=nf90_create(path="./data/phi."//cnum//".nc", cmode=NF90_NETCDF4, ncid=ncid_out1)!, &
       !ierr_nf90=nf90_create(path="./data/phi."//cnum//".nc", cmode=IOR(NF90_NETCDF4,NF90_MPIIO), ncid=ncid_out1)!, &
                             !comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
       call check_nf90err(ierr_nf90, "nf90_create")
@@ -141,7 +141,7 @@ SUBROUTINE Alinnetcdf
     do inum = snum, enum
       write( cnum, fmt="(i3.3)" ) inum
       != Create file
-      ierr_nf90=nf90_create(path="./data/Al."//cnum//".nc", cmode=NF90_CLOBBER, ncid=ncid_out1)!, &
+      ierr_nf90=nf90_create(path="./data/Al."//cnum//".nc", cmode=NF90_NETCDF4, ncid=ncid_out1)!, &
       !ierr_nf90=nf90_create(path="./data/Al."//cnum//".nc", cmode=IOR(NF90_NETCDF4,NF90_MPIIO), ncid=ncid_out1)!, &
                             !comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
       call check_nf90err(ierr_nf90, "nf90_create")
@@ -218,7 +218,7 @@ SUBROUTINE mominnetcdf
       write( cnum, fmt="(i3.3)" ) inum
 
       != Create file
-      ierr_nf90=nf90_create(path="./data/mom."//cnum//".nc", cmode=NF90_CLOBBER, ncid=ncid_out1)!, &
+      ierr_nf90=nf90_create(path="./data/mom."//cnum//".nc", cmode=NF90_NETCDF4, ncid=ncid_out1)!, &
       !ierr_nf90=nf90_create(path="./data/mom."//cnum//".nc", cmode=IOR(NF90_NETCDF4,NF90_MPIIO), ncid=ncid_out1)!, &
                             !comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
       call check_nf90err(ierr_nf90, "nf90_create")
@@ -299,7 +299,7 @@ SUBROUTINE fxvinnetcdf
       write( cnum, fmt="(i3.3)" ) inum
 
       != Create file
-      ierr_nf90=nf90_create(path="./data/fxv."//cnum//".nc", cmode=NF90_CLOBBER, ncid=ncid_out1)!, &
+      ierr_nf90=nf90_create(path="./data/fxv."//cnum//".nc", cmode=NF90_NETCDF4, ncid=ncid_out1)!, &
       !ierr_nf90=nf90_create(path="./data/fxv."//cnum//".nc", cmode=IOR(NF90_NETCDF4,NF90_MPIIO), ncid=ncid_out1)!, &
                             !comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
       call check_nf90err(ierr_nf90, "nf90_create")
@@ -390,7 +390,7 @@ SUBROUTINE cntinnetcdf
       write( cnum, fmt="(i3.3)" ) inum
 
       != Create file
-      ierr_nf90=nf90_create(path="./data/cnt."//cnum//".nc", cmode=NF90_CLOBBER, ncid=ncid_out1)!, &
+      ierr_nf90=nf90_create(path="./data/cnt."//cnum//".nc", cmode=NF90_NETCDF4, ncid=ncid_out1)!, &
       !ierr_nf90=nf90_create(path="./data/cnt."//cnum//".nc", cmode=IOR(NF90_NETCDF4,NF90_MPIIO), ncid=ncid_out1)!, &
                             !comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
       call check_nf90err(ierr_nf90, "nf90_create")
@@ -480,7 +480,7 @@ SUBROUTINE trninnetcdf
       write( cnum, fmt="(i3.3)" ) inum
 
       != Create file
-      ierr_nf90=nf90_create(path="./data/trn."//cnum//".nc", cmode=NF90_CLOBBER, ncid=ncid_out1)!, &
+      ierr_nf90=nf90_create(path="./data/trn."//cnum//".nc", cmode=NF90_NETCDF4, ncid=ncid_out1)!, &
       !ierr_nf90=nf90_create(path="./data/trn."//cnum//".nc", cmode=IOR(NF90_NETCDF4,NF90_MPIIO), ncid=ncid_out1)!, &
                             !comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
       call check_nf90err(ierr_nf90, "nf90_create")
@@ -562,7 +562,7 @@ SUBROUTINE triinnetcdf( mxt, myt )
       write( cnum, fmt="(i3.3)" ) inum
 
       != Create file
-      ierr_nf90=nf90_create(path="./data/tri.mx"//cmx//"my"//cmy//"."//cnum//".nc", cmode=NF90_CLOBBER, ncid=ncid_out1)!, &
+      ierr_nf90=nf90_create(path="./data/tri.mx"//cmx//"my"//cmy//"."//cnum//".nc", cmode=NF90_NETCDF4, ncid=ncid_out1)!, &
       !ierr_nf90=nf90_create(path="./data/tri_mx"//cmx//"my"//cmy//"."//cnum//".nc", cmode=IOR(NF90_NETCDF4,NF90_MPIIO), ncid=ncid_out1)!, &
                             !comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
       call check_nf90err(ierr_nf90, "nf90_create")
