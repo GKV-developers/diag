@@ -46,18 +46,17 @@ PROGRAM diag
 
   use out_triinkxky, only : triinkxky
 
+  use out_fluidtotaltrans, only : fluidtotaltrans_isloop
+  use out_fluiddetailtrans, only : fluiddetailtrans_mxmyisloop
+
 !!!use out_mominxz, only : phiinxz, Alinxz, mominxz
 !!!use out_triinkxky, only : triinkxky
 !!!use out_mominavs, only : phiinavs
 !!!use out_bicoherence, only : bicoh_phicheck, bicoh_freqcheck, bicoh_bicoherence
 !!!use out_realsp, only : realsp_create
-!!!use out_fluidtotaltrans, only : fluidtotaltrans_izloop, fluidtotaltrans_loop
 !!!use out_fluidsubsptrans, only : fluidsubsptrans_izloop, fluidsubsptrans_izloop_open,  &
 !!!                                fluidsubsptrans_izloop_close, fluidsubsptrans_loop,  &
 !!!                                fluidsubsptrans_loop_open, fluidsubsptrans_loop_close
-!!!use out_fluiddetailtrans, only : fluiddetailtrans_izloop, fluiddetailtrans_izloop_open,  &
-!!!                                 fluiddetailtrans_izloop_close, fluiddetailtrans_loop,   &
-!!!                                 fluiddetailtrans_loop_open, fluiddetailtrans_loop_close
 !!!use out_zfshearing, only : zfs_open, zfs_close, zfshearing, zfshearing_timeaverage
 !!!use out_zfdensity, only : zfd_open, zfd_close, zfdensity
   implicit none
@@ -352,6 +351,31 @@ PROGRAM diag
     end do
 
 
+!= example to write total triad transfer in fluid approximation =
+    write(*,*) "OUTPUT : fluidtotaltransinkxky* "
+    loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
+    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+    loop_end = loop_phi_end(enum)
+    do loop = loop_sta, loop_end, loop_skp
+      do is = 0, ns-1
+        call fluidtotaltrans_isloop( is, loop )
+      end do
+    end do
+
+
+!= example to write detailed triad transfer in fluid approximation =
+    write(*,*) "OUTPUT : fluiddetailtransinkxky* "
+    loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
+    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+    loop_end = loop_phi_end(enum)
+    do loop = loop_sta, loop_end, loop_skp
+      do is = 0, ns-1
+        call fluiddetailtrans_mxmyisloop(diag_mx=0, diag_my=2, is=is, loop=loop )
+        call fluiddetailtrans_mxmyisloop(diag_mx=1, diag_my=0, is=is, loop=loop )
+      end do
+    end do
+
+
 !!!
 !!!  != example to write moments in xz =
 !!!    gmy=3
@@ -366,33 +390,11 @@ PROGRAM diag
 !!!    end do
 !!!
 !!!
-!!!  != example to write triad transfer diagnostics in kxky =
-!!!  ! do loop = loop_phi_sta(snum), loop_phi_end(enum)
-!!!  !   do is = 0, ns-1
-!!!  !     do it = 0, num_triad_diag-1
-!!!  !       mxt = triad_diag_mxt(it)
-!!!  !       myt = triad_diag_myt(it)
-!!!  !       call triinkxky( mxt, myt, is, loop )
-!!!  !     end do
-!!!  !   end do
-!!!  ! end do
-!!!
-!!!
 !!!  != example to write auto bicoherence in frequency space =
 !!!  ! call realsp_create( 0, 1999, 2002 )  ! create data for bicoherence analysis
 !!!  ! call bicoh_phicheck( 2000 )
 !!!  ! call bicoh_freqcheck( 0, 0, 10._DP )
 !!!  ! call bicoh_bicoherence( 5._DP, 10._DP )
-!!!
-!!!
-!!!  != example to write total triad transfer in fluid approximation =
-!!!  ! giz = 0
-!!!  ! loop_sta = loop_phi_sta(snum); loop_end = loop_phi_end(enum);
-!!!  ! loop_skp = max(1, (loop_end - loop_sta)/100)
-!!!  ! do loop = loop_sta, loop_end, loop_skp
-!!!  !   call fluidtotaltrans_izloop( giz, loop )
-!!!  !   call fluidtotaltrans_loop( loop )
-!!!  ! end do
 !!!
 !!!
 !!!  != example to write subspace transfer in fluid approximation =
@@ -405,16 +407,6 @@ PROGRAM diag
 !!!  ! end do
 !!!  ! call fluidsubsptrans_loop_close
 !!!    
-!!!
-!!!  != example to write detailed triad transfer in fluid approximation =
-!!!  ! giz = 0
-!!!  ! loop_sta = loop_phi_sta(snum); loop_end = loop_phi_end(enum);
-!!!  ! loop_skp = max(1, (loop_end - loop_sta)/100)
-!!!  ! do loop = loop_sta, loop_end, loop_skp
-!!!  !   call fluiddetailtrans_izloop( giz, loop )
-!!!  !   call fluiddetailtrans_loop( loop )
-!!!  ! end do
-!!!
 !!!
 !!!  != example to write zonal flow shearing rate =
 !!!  ! call zfs_open
