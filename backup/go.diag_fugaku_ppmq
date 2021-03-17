@@ -10,7 +10,7 @@ ulimit -s unlimited
 ulimit -n 16384
 
 ### Working directory
-DIR=/data/hp150279/u00165/gkvp/f0.60/data_SmallGridIO
+DIR=/data/hp150279/u00165/gkvp/f0.61/ITGae-lin
 LDM=diag.exe
 
 

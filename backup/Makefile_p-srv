@@ -98,9 +98,9 @@ diag:	${SRC}/diag_header.f90\
 #	${FC} ${FFLAGS} -c ${SRC}/out_bicoherence.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_zfshearing.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_zfdensity.f90
-#	${FC} ${FFLAGS} -c ${SRC}/out_fluidtotaltrans.f90
+	${FC} ${FFLAGS} -c ${SRC}/out_fluidtotaltrans.f90
 #	${FC} ${FFLAGS} -c ${SRC}/out_fluidsubsptrans.f90
-#	${FC} ${FFLAGS} -c ${SRC}/out_fluiddetailtrans.f90
+	${FC} ${FFLAGS} -c ${SRC}/out_fluiddetailtrans.f90
 	${FC} ${FFLAGS} -c ${SRC}/diag_main.f90
 
 	${FC} ${FFLAGS} *.o -o ${PROG} ${LIB}

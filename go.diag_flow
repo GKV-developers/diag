@@ -64,7 +64,7 @@ module load fftw-tune phdf5 netcdf-c netcdf-fortran
 
 
 ### Working directory 
-DIR=/data/group1/z43460z/gkvp/f0.60/data_SmallGridIO
+DIR=/data/group1/z43460z/gkvp/f0.61/ITGae-lin
 LDM=diag.exe
 
 
