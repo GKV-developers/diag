@@ -33,7 +33,7 @@ PROGRAM diag
                            wesintky_parity, wemintky_parity, engintky_parity, menintky_parity
 
   use out_ffinkxky, only : fkinkxky_fxv, fkinkxky_cnt
-  use out_ffinvm, only : fkinvm_fxv, fkinvm_cnt
+  use out_ffinvm, only : fkinvm_fxv, fkinvm_cnt, fluxinvm_fxv, fluxinvm_cnt
   use out_ffinzv, only : fkinzv
   use out_ffinzvm_vtk, only : fkinzvm_vtk, fkinzvm_connect_vtk
 
@@ -248,6 +248,7 @@ PROGRAM diag
 !    do loop = loop_sta, loop_end, loop_skp
 !      do is = 0, ns-1
 !        call fkinvm_fxv( mx, gmy, rankz, is, loop )
+!        call fluxinvm_fxv( rankz, is, loop )
 !      end do
 !    end do
 !    != read from cnt/*cnt* =
@@ -260,6 +261,7 @@ PROGRAM diag
 !    !do loop = loop_sta, loop_end, loop_skp
 !    !  do is = 0, ns-1
 !    !    call fkinvm_cnt( mx, gmy, giz, is, loop )
+!    !    call fluxinvm_cnt( giz, is, loop )
 !    !  end do
 !    !end do
 !

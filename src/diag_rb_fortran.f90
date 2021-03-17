@@ -2983,6 +2983,48 @@ SUBROUTINE rb_cnt_ivimisloop( giv, gim, is, loop, ff )
 END SUBROUTINE rb_cnt_ivimisloop
 
 
+SUBROUTINE rb_cnt_izivimisloop( giz, giv, gim, is, loop, ff )
+!-------------------------------------------------------------------------------
+!
+!     Get ff at giv, gim, is, loop
+!                                                   (S. Maeyama, 11 Oct. 2015)
+!
+!-------------------------------------------------------------------------------
+  integer, intent(in) :: giz, giv, gim, is, loop
+  complex(kind=DP), intent(out),  &
+    dimension(-nx:nx,0:global_ny) :: ff
+
+  complex(kind=DP), dimension(-nx:nx,0:ny) :: wkff
+  integer :: inum, irec, skipbyte, ir, rankm, rankv, rankz, rankw
+  integer :: mx, my, iz, iv, im, gmy
+
+    call rb_giz2rankziz( giz, rankz, iz )
+    call rb_giv2rankviv( giv, rankv, iv )
+    call rb_gim2rankmim( gim, rankm, im )
+    call rb_cnt_loop2inumirec( loop, inum, irec )
+
+    do rankw = 0, nprocw-1
+      ir = rankw + nprocw*rankz + nprocw*nprocz*rankv  &
+         + nprocw*nprocz*nprocv*rankm + nprocw*nprocz*nprocv*nprocm*is  ! ranks=is
+      skipbyte = recl_cnt*(irec-1) &  ! (irec-1) lines are skipped.
+               + nhead + DP        &  ! header and time is also skipped.
+               + ( (2*nx+1)*(ny+1)*(2*nz)*(2*nv)*im  &
+                 + (2*nx+1)*(ny+1)*(2*nz)*(iv-1)     &
+                 + (2*nx+1)*(ny+1)*(iz+nz)          )*(2*DP)
+      read( unit=600000000+100000*inum+ir, pos=skipbyte+1 ) wkff
+      do my = 0, ny
+        gmy = ( ny+1 ) * rankw + my
+        if ( gmy <= global_ny ) then
+          do mx = -nx, nx
+            ff(mx,gmy) = wkff(mx,my)
+          end do
+        end if
+      end do
+    end do
+
+END SUBROUTINE rb_cnt_izivimisloop
+
+
 SUBROUTINE rb_cnt_mxmyivimisloop( mx, gmy, giv, gim, is, loop, ff )
 !-------------------------------------------------------------------------------
 !
