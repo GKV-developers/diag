@@ -12,7 +12,7 @@ MODULE out_mominrz
 
   public phiinrz
 
-  integer, parameter :: n_alp = 6
+  integer, parameter :: n_alp = 3
   ! Adapt a flux tube as 1/n_alp torus for visualization.
   ! Then, Larmor radius rho/r_major = pi*eps_r/(q_0*ly*n_alp)
 
@@ -30,7 +30,8 @@ SUBROUTINE phiinrz( loop )
 !
 !-------------------------------------------------------------------------------
   use diag_rb, only : rb_phi_gettime, rb_phi_loop
-  use diag_geom, only : xx, gky, gzz, ck, dj, eps_r, q_0, s_hat, lx, ly, lz, dz
+  use diag_geom, only : xx, gky, gzz, ck, dj, eps_r, q_0, s_hat, lx, ly, &
+                        lz, dz, n_tht
   use diag_fft, only : fft_backward_x1
 
   integer, intent(in) :: loop
@@ -92,21 +93,29 @@ SUBROUTINE phiinrz( loop )
 
     zeta = 0._DP
     wdx = lx / real( nxw, kind=DP )
-    wdz = lz / real( nzw, kind=DP )
+    !wdz = lz / real( nzw, kind=DP )
+    wdz = lz / real( n_tht*nzw, kind=DP ) ! Modify for n_tht>1
 !$OMP parallel do default(none) &
-!$OMP shared(nzw,zeta,dz,gzz,gky,wdx,wdz,lx,ly,q_0,eps_r,s_hat,rho,phixkyz,phi_pol) &
+!$OMP shared(nzw,zeta,dz,gzz,gky,wdx,wdz,lx,ly,q_0,eps_r,s_hat,rho,phixkyz,phi_pol,n_tht) &
 !$OMP private(ix,my,iz,izw,wzz,phi_interp,alpha,wtheta,wxx,q_r,wyy)
     do izw = -nzw, nzw
 
       !- interpolate along z -
       wzz = wdz * real(izw, kind=DP)
       if (izw == -nzw) then
-        phi_interp(:,:) = phixkyz(:,:,-global_nz)
+        !phi_interp(:,:) = phixkyz(:,:,-global_nz)
+        phi_interp(:,:) = phixkyz(:,:,-global_nz/n_tht) ! Modify for n_tht>1
       else if (izw == nzw) then
-        phi_interp(:,:) = phixkyz(:,:,global_nz)
+        !phi_interp(:,:) = phixkyz(:,:,global_nz)
+        phi_interp(:,:) = phixkyz(:,:,global_nz/n_tht) ! Modify for n_tht>1
       else
-        iz = int(wzz / dz) ! find position zz(iz)<= zzw < zz(iz+1)
+        if (wzz > 0) then
+          iz = int(wzz / dz) ! find position zz(iz) <= wzz < zz(iz+1)
+        else
+          iz = int(wzz / dz) -1 ! find position zz(iz) <= wzz < zz(iz+1)
+        end if
         alpha = (wzz - gzz(iz)) / dz
+        !write(*,*) gzz(iz), wzz, gzz(iz+1), alpha ! for debug
         phi_interp(:,:) = (1._DP - alpha) * phixkyz(:,:,iz) + alpha * phixkyz(:,:,iz+1)
       end if
 
@@ -178,7 +187,7 @@ SUBROUTINE cartesian_coordinates_salpha( mr, z_car, nzw, q_0, s_hat, eps_r )
 !    Calculate Cartesian coordinates for s-alpha model
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : lx, ly, lz
+  use diag_geom, only : lx, ly, lz, n_tht
   implicit none
   real(kind=DP), intent(out), &
     dimension(0:2*nxw,-nzw:nzw) :: mr, z_car
@@ -191,7 +200,8 @@ SUBROUTINE cartesian_coordinates_salpha( mr, z_car, nzw, q_0, s_hat, eps_r )
     rho = pi * eps_r / (q_0 * ly * n_alp) ! = Larmor radius rho/r_major
 
     wdx = lx / real( nxw, kind=DP )
-    wdz = lz / real( nzw, kind=DP )
+    !wdz = lz / real( nzw, kind=DP )
+    wdz = lz / real( n_tht*nzw, kind=DP ) ! Modify for n_tht>1
     do iz = -nzw, nzw
       wzz = wdz * real( iz, kind=DP )
       wtheta = wzz
@@ -218,7 +228,7 @@ SUBROUTINE cartesian_coordinates_miller( mr, z_car, nzw, q_0, s_hat, eps_r, &
 !    Calculate Cartesian coordinates for s-alpha model
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : lx, ly, lz
+  use diag_geom, only : lx, ly, lz, n_tht
   implicit none
   real(kind=DP), intent(out), &
     dimension(0:2*nxw,-nzw:nzw) :: mr, z_car
@@ -231,7 +241,8 @@ SUBROUTINE cartesian_coordinates_miller( mr, z_car, nzw, q_0, s_hat, eps_r, &
     rho = pi * eps_r / (q_0 * ly * n_alp) ! = Larmor radius rho/r_major
 
     wdx = lx / real( nxw, kind=DP )
-    wdz = lz / real( nzw, kind=DP )
+    !wdz = lz / real( nzw, kind=DP )
+    wdz = lz / real( n_tht*nzw, kind=DP ) ! Modify for n_tht>1
     do iz = -nzw, nzw
       wzz = wdz * real( iz, kind=DP )
       wtheta = wzz
