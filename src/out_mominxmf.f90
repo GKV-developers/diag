@@ -15,7 +15,7 @@ MODULE out_mominxmf
           mominxmf_var_Al,  mominxmf_header_Al,  &
           mominxmf_var_mom, mominxmf_header_mom
 
-  integer, parameter :: n_alp = 6
+  integer, parameter :: n_alp = 3
   ! Adapt a flux tube as 1/n_alp torus for visualization.
   ! Then, Larmor radius rho/r_major = pi*eps_r/(q_0*ly*n_alp)
 
