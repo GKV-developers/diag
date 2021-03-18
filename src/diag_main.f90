@@ -147,13 +147,13 @@ PROGRAM diag
         call mominxy( giz, is, loop )
       end do
     end do
-    do loop = loop_sta, loop_end, loop_skp
-      call phiinxy_parity( giz, loop )
-      call Alinxy_parity( giz, loop )
-      do is = 0, ns-1
-        call mominxy_parity( giz, is, loop )
-      end do
-    end do
+    !do loop = loop_sta, loop_end, loop_skp
+    !  call phiinxy_parity( giz, loop )
+    !  call Alinxy_parity( giz, loop )
+    !  do is = 0, ns-1
+    !    call mominxy_parity( giz, is, loop )
+    !  end do
+    !end do
 
 
 != example to write moments in zz =
@@ -335,45 +335,47 @@ PROGRAM diag
     end do
 
 
-!= example to write triad transfer diagnostics in kxky =
-    write(*,*) "OUTPUT : triinkxky* "
-    loop_skp = 10
-    loop_sta = (floor(dble(loop_tri_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_tri_sta(snum)
-    loop_end = loop_tri_end(enum)
-    do loop = loop_sta, loop_end, loop_skp
-      do is = 0, ns-1
-        do it = 0, num_triad_diag-1
-          mxt = triad_diag_mxt(it)
-          myt = triad_diag_myt(it)
-          call triinkxky( mxt, myt, is, loop )
-        end do
-      end do
-    end do
+!!= example to write triad transfer diagnostics in kxky =
+!    write(*,*) "OUTPUT : triinkxky* "
+!    loop_skp = 10
+!    loop_sta = (floor(dble(loop_tri_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_tri_sta(snum)
+!    loop_end = loop_tri_end(enum)
+!    do loop = loop_sta, loop_end, loop_skp
+!      do is = 0, ns-1
+!        do it = 0, num_triad_diag-1
+!          mxt = triad_diag_mxt(it)
+!          myt = triad_diag_myt(it)
+!          call triinkxky( mxt, myt, is, loop )
+!        end do
+!      end do
+!    end do
+!
+!
+!!= example to write total triad transfer in fluid approximation =
+!    write(*,*) "OUTPUT : fluidtotaltransinkxky* "
+!    loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
+!    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+!    loop_end = loop_phi_end(enum)
+!    do loop = loop_sta, loop_end, loop_skp
+!      do is = 0, ns-1
+!        call fluidtotaltrans_isloop( is, loop )
+!      end do
+!    end do
+!
+!
+!!= example to write detailed triad transfer in fluid approximation =
+!    write(*,*) "OUTPUT : fluiddetailtransinkxky* "
+!    loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
+!    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
+!    loop_end = loop_phi_end(enum)
+!    do loop = loop_sta, loop_end, loop_skp
+!      do is = 0, ns-1
+!        call fluiddetailtrans_mxmyisloop(diag_mx=0, diag_my=2, is=is, loop=loop )
+!!        call fluiddetailtrans_mxmyisloop(diag_mx=1, diag_my=0, is=is, loop=loop )
+!      end do
+!    end do
 
 
-!= example to write total triad transfer in fluid approximation =
-    write(*,*) "OUTPUT : fluidtotaltransinkxky* "
-    loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
-    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
-    loop_end = loop_phi_end(enum)
-    do loop = loop_sta, loop_end, loop_skp
-      do is = 0, ns-1
-        call fluidtotaltrans_isloop( is, loop )
-      end do
-    end do
-
-
-!= example to write detailed triad transfer in fluid approximation =
-    write(*,*) "OUTPUT : fluiddetailtransinkxky* "
-    loop_skp = max(1, (loop_phi_end(enum) - loop_phi_sta(snum))/100)
-    loop_sta = (floor(dble(loop_phi_sta(snum)-1)/loop_skp)+1)*loop_skp ! loop_phi_sta(snum)
-    loop_end = loop_phi_end(enum)
-    do loop = loop_sta, loop_end, loop_skp
-      do is = 0, ns-1
-        call fluiddetailtrans_mxmyisloop(diag_mx=0, diag_my=2, is=is, loop=loop )
-        call fluiddetailtrans_mxmyisloop(diag_mx=1, diag_my=0, is=is, loop=loop )
-      end do
-    end do
 
 
 !!!

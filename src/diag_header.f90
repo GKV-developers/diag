@@ -23,7 +23,7 @@ MODULE diag_header
 !%%%%%%%%%%%%%%%%%%%%%%
 
 !%%% GKV parameters %%%
-  integer, parameter :: nxw = 2, nyw = 20
+  integer, parameter :: nxw = 10, nyw = 20
   integer, parameter :: nx = 0, global_ny = 12 ! 2/3 de-aliasing rule
   integer, parameter :: global_nz = 48, global_nv = 24, global_nm = 15
 

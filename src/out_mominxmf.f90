@@ -19,7 +19,7 @@ MODULE out_mominxmf
   ! Adapt a flux tube as 1/n_alp torus for visualization.
   ! Then, Larmor radius rho/r_major = pi*eps_r/(q_0*ly*n_alp)
 
-  integer, parameter :: nzw = 3 * global_nz
+  integer, parameter :: nzw = 1 * global_nz
   ! Linear interpolation increases field-aligned resolution, nzw >= global_nz.
 
  CONTAINS
@@ -112,7 +112,7 @@ SUBROUTINE mominxmf_header_phi( loop_sta, loop_end, loop_skip )
 !                                                   (S. Maeyama, 30 Oct 2020)
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : lx, ly, lz
+  use diag_geom, only : lx, ly
   use diag_rb, only : rb_phi_gettime
 
   integer, intent(in) :: loop_sta, loop_end, loop_skip
@@ -316,7 +316,7 @@ SUBROUTINE mominxmf_header_Al( loop_sta, loop_end, loop_skip )
 !                                                   (S. Maeyama, 30 Oct 2020)
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : lx, ly, lz
+  use diag_geom, only : lx, ly
   use diag_rb, only : rb_Al_gettime
 
   integer, intent(in) :: loop_sta, loop_end, loop_skip
@@ -523,7 +523,7 @@ SUBROUTINE mominxmf_header_mom( imom, is, loop_sta, loop_end, loop_skip )
 !                                                   (S. Maeyama, 30 Oct 2020)
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : lx, ly, lz
+  use diag_geom, only : lx, ly
   use diag_rb, only : rb_phi_gettime
 
   integer, intent(in) :: imom, is, loop_sta, loop_end, loop_skip
@@ -696,7 +696,7 @@ SUBROUTINE phi_kxkyz2xyz_fluxtube( phi, phi_xyz )
 !    Calculate real space quantity
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : ck, dj, lz, dz, gzz
+  use diag_geom, only : ck, dj, lz, dz, gzz, n_tht
   use diag_fft, only : fft_backward_xy
   implicit none
   complex(kind=DP), intent(in), &
@@ -726,21 +726,29 @@ SUBROUTINE phi_kxkyz2xyz_fluxtube( phi, phi_xyz )
         end do
       end do
 
-    wdz = lz / real( nzw, kind=DP )
+    !wdz = lz / real( nzw, kind=DP )
+    wdz = lz / real( n_tht*nzw, kind=DP ) ! Modify for n_tht>1
 !$OMP parallel do default(none) &
-!$OMP shared(wdz,dz,gzz,phi_kxkyz,phi_xyz) &
+!$OMP shared(wdz,dz,gzz,phi_kxkyz,phi_xyz,n_tht) &
 !$OMP private(iz,izw,my,mx,wzz,alpha,phi_interp,wr2)
     do izw = -nzw, nzw
 
       !- interpolate along z -
       wzz = wdz * real(izw, kind=DP)
       if (izw == -nzw) then
-        phi_interp(:,:) = phi_kxkyz(:,:,-global_nz)
+        !phi_interp(:,:) = phixkyz(:,:,-global_nz)
+        phi_interp(:,:) = phi_kxkyz(:,:,-global_nz/n_tht) ! Modify for n_tht>1
       else if (izw == nzw) then
-        phi_interp(:,:) = phi_kxkyz(:,:,global_nz)
+        !phi_interp(:,:) = phixkyz(:,:,global_nz)
+        phi_interp(:,:) = phi_kxkyz(:,:,global_nz/n_tht) ! Modify for n_tht>1
       else
-        iz = int(wzz / dz) ! find position zz(iz)<= zzw < zz(iz+1)
+        if (wzz > 0) then
+          iz = int(wzz / dz) ! find position zz(iz) <= wzz < zz(iz+1)
+        else
+          iz = int(wzz / dz) -1 ! find position zz(iz) <= wzz < zz(iz+1)
+        end if
         alpha = (wzz - gzz(iz)) / dz
+        !write(*,*) gzz(iz), wzz, gzz(iz+1), alpha ! for debug
         phi_interp(:,:) = (1._DP - alpha) * phi_kxkyz(:,:,iz) + alpha * phi_kxkyz(:,:,iz+1)
       end if
 
@@ -783,7 +791,7 @@ SUBROUTINE cartesian_coordinates_salpha( coords, i_alp, q_0, s_hat, eps_r )
 !    Calculate Cartesian coordinates for s-alpha model
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : lx, ly, lz
+  use diag_geom, only : lx, ly, lz, n_tht
   implicit none
   real(kind=DP), intent(out), &
     dimension(3,0:2*nxw,0:2*nyw,-nzw:nzw) :: coords
@@ -802,9 +810,10 @@ SUBROUTINE cartesian_coordinates_salpha( coords, i_alp, q_0, s_hat, eps_r )
 
     wdx = lx / real( nxw, kind=DP )
     wdy = ly / real( nyw, kind=DP )
-    wdz = lz / real( nzw, kind=DP )
+    !wdz = lz / real( nzw, kind=DP )
+    wdz = lz / real( n_tht*nzw, kind=DP ) ! Modify for n_tht>1
 !$OMP parallel do default(none) &
-!$OMP shared(i_alp,wdx,wdy,wdz,lx,ly,q_0,s_hat,rho,eps_r,coords) &
+!$OMP shared(i_alp,wdx,wdy,wdz,lx,ly,q_0,s_hat,rho,eps_r,coords,n_tht) &
 !$OMP private(iz,my,mx,wzz,wtheta,wyy,wxx,q_r,wsr,wmr,wzeta,wx_car,wy_car,wz_car)
     do iz = -nzw, nzw
       wzz = wdz * real( iz, kind=DP )
@@ -839,7 +848,7 @@ SUBROUTINE cartesian_coordinates_miller( coords, i_alp, q_0, s_hat, eps_r, &
 !    Calculate Cartesian coordinates for s-alpha model
 !
 !-------------------------------------------------------------------------------
-  use diag_geom, only : lx, ly, lz
+  use diag_geom, only : lx, ly, lz, n_tht
   implicit none
   real(kind=DP), intent(out), &
     dimension(3,0:2*nxw,0:2*nyw,-nzw:nzw) :: coords
@@ -858,7 +867,8 @@ SUBROUTINE cartesian_coordinates_miller( coords, i_alp, q_0, s_hat, eps_r, &
 
     wdx = lx / real( nxw, kind=DP )
     wdy = ly / real( nyw, kind=DP )
-    wdz = lz / real( nzw, kind=DP )
+    !wdz = lz / real( nzw, kind=DP )
+    wdz = lz / real( n_tht*nzw, kind=DP ) ! Modify for n_tht>1
     do iz = -nzw, nzw
       wzz = wdz * real( iz, kind=DP )
       wtheta = wzz
