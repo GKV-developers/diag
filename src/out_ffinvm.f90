@@ -46,7 +46,7 @@ SUBROUTINE fkinvm_fxv( mx, gmy, rankz, is, loop )
     call rb_phi_gettime( loop_phi, time_phi )
     call rb_phi_mxmyizloop( mx, gmy, giz, loop_phi, phi )
     if (abs(time_phi - time) > min(dtout_ptn,dtout_fxv)) then
-      write(*,*) "# Error: wrong time in fluxinvm_fxv."
+      write(*,*) "# Error: wrong time in fkinvm_fxv."
       write(*,*) "# time(fxv)=",time,",time(phi)=",time_phi
     end if
 !---
@@ -92,9 +92,10 @@ SUBROUTINE fluxinvm_fxv( rankz, is, loop )
 
   integer, intent(in) :: rankz, is, loop
 
-  real(kind=DP) :: time, time_phi, kmo, wr
+  real(kind=DP) :: time, time_phi, kmo
+  complex(kind=DP) :: wc
   complex(kind=DP), dimension(-nx:nx,0:global_ny) :: fk, phi
-  real(kind=DP), dimension(1:2*global_nv,0:global_nm) :: flux
+  complex(kind=DP), dimension(1:2*global_nv,0:global_nm) :: flux
   real(kind=DP), dimension(-nx:nx,0:global_ny,0:global_nm) :: j0
   character(len=4) :: crz
   character(len=1) :: cis
@@ -128,14 +129,14 @@ SUBROUTINE fluxinvm_fxv( rankz, is, loop )
     do im = 0, global_nm
       do iv = 1, 2*global_nv
         call rb_fxv_rankzivimisloop( rankz, iv, im, is, loop, fk )
-        wr = 0._DP
+        wc = (0._DP, 0._DP)
         do my = 0, global_ny
           do mx = -nx, nx
-            wr = wr + real( - ui * gky(my) * j0(mx,my,im) * phi(mx,my)  &
-                            * conjg( fk(mx,my) ), kind=DP )
+            wc = wc + ( - ui * gky(my) * j0(mx,my,im) * phi(mx,my)  &
+                            * conjg( fk(mx,my) ) )
           end do
         end do
-        flux(iv,im) = wr
+        flux(iv,im) = wc
       end do
     end do
 
@@ -146,10 +147,11 @@ SUBROUTINE fluxinvm_fxv( rankz, is, loop )
     open( offinvm, file="./data/fluxinvm_rankz"//crz//"s"//cis//"_t"//cloop//".dat" )
       write( offinvm, "(a,i17,a,g17.7e3)" ) "# loop=",loop, ", time=",time
       write( offinvm, "(a,i17,a,g17.7e3)" ) "#  giz=",giz,  ",  gzz=",gzz(giz)
-      write( offinvm, "(99a17)" ) "#              vl","mu","vp","flux"
+      write( offinvm, "(99a17)" ) "#              vl","mu","vp","Re[flux_es]","Im[flux_es]"
       do im = 0, global_nm
         do iv = 1, 2*global_nv
-          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im), flux(iv,im)
+          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im),  &
+                                          real(flux(iv,im),kind=DP), aimag(flux(iv,im))
         end do
         write( offinvm, * )
       end do
@@ -187,7 +189,7 @@ SUBROUTINE fkinvm_cnt( mx, gmy, giz, is, loop )
     call rb_phi_gettime( loop_phi, time_phi )
     call rb_phi_mxmyizloop( mx, gmy, giz, loop_phi, phi )
     if (abs(time_phi - time) > min(dtout_ptn,dtout_fxv)) then
-      write(*,*) "# Error: wrong time in fluxinvm_fxv."
+      write(*,*) "# Error: wrong time in fkinvm_fxv."
       write(*,*) "# time(fxv)=",time,",time(phi)=",time_phi
     end if
 !---
@@ -232,9 +234,10 @@ SUBROUTINE fluxinvm_cnt( giz, is, loop )
 
   integer, intent(in) :: giz, is, loop
 
-  real(kind=DP) :: time, time_phi, kmo, wr
+  real(kind=DP) :: time, time_phi, kmo
+  complex(kind=DP) :: wc
   complex(kind=DP), dimension(-nx:nx,0:global_ny) :: fk, phi
-  real(kind=DP), dimension(1:2*global_nv,0:global_nm) :: flux
+  complex(kind=DP), dimension(1:2*global_nv,0:global_nm) :: flux
   real(kind=DP), dimension(-nx:nx,0:global_ny,0:global_nm) :: j0
   character(len=4) :: ciz
   character(len=1) :: cis
@@ -247,7 +250,7 @@ SUBROUTINE fluxinvm_cnt( giz, is, loop )
     call rb_phi_gettime( loop_phi, time_phi )
     call rb_phi_izloop( giz, loop_phi, phi )
     if (abs(time_phi - time) > min(dtout_ptn,dtout_fxv)) then
-      write(*,*) "# Error: wrong time in fluxinvm_fxv."
+      write(*,*) "# Error: wrong time in fluxinvm_cnt."
       write(*,*) "# time(fxv)=",time,",time(phi)=",time_phi
     end if
     
@@ -267,14 +270,14 @@ SUBROUTINE fluxinvm_cnt( giz, is, loop )
     do im = 0, global_nm
       do iv = 1, 2*global_nv
         call rb_cnt_izivimisloop( giz, iv, im, is, loop, fk )
-        wr = 0._DP
+        wc = (0._DP, 0._DP)
         do my = 0, global_ny
           do mx = -nx, nx
-            wr = wr + real( - ui * gky(my) * j0(mx,my,im) * phi(mx,my)  &
-                            * conjg( fk(mx,my) ), kind=DP )
+            wc = wc + ( - ui * gky(my) * j0(mx,my,im) * phi(mx,my)  &
+                            * conjg( fk(mx,my) ) )
           end do
         end do
-        flux(iv,im) = wr
+        flux(iv,im) = wc
       end do
     end do
 
@@ -285,10 +288,11 @@ SUBROUTINE fluxinvm_cnt( giz, is, loop )
     open( offinvm, file="./data/fluxinvm_z"//ciz//"s"//cis//"_t"//cloop//".dat" )
       write( offinvm, "(a,i17,a,g17.7e3)" ) "# loop=",loop, ", time=",time
       write( offinvm, "(a,i17,a,g17.7e3)" ) "#  giz=",giz,  ",  gzz=",gzz(giz)
-      write( offinvm, "(99a17)" ) "#              vl","mu","vp","flux"
+      write( offinvm, "(99a17)" ) "#              vl","mu","vp","Re[flux_es]","Im[flux_es]"
       do im = 0, global_nm
         do iv = 1, 2*global_nv
-          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im), flux(iv,im)
+          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im),  &
+                                          real(flux(iv,im), kind=DP), aimag(flux(iv,im))
         end do
         write( offinvm, * )
       end do

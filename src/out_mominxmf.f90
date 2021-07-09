@@ -649,7 +649,8 @@ SUBROUTINE mominxmf_header_mom( imom, is, loop_sta, loop_end, loop_skip )
       write( omominxyz, '(a)' ) ''
       do loop = loop_sta, loop_end, loop_skip
         write( cloop, '(i8.8)' ) loop
-        write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'" GridType="Collection" CollectionType="Spatial">'
+        write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//&
+                                    '" GridType="Collection" CollectionType="Spatial">'
         do i_alp = 0, n_alp-1
           write( c_alp, '(i3.3)' ) i_alp
           write( omominxyz, '(a)' ) '<Grid Name="mom'//cimom//'s'//cis//'_var'//cloop//'_alp'//c_alp//'">'

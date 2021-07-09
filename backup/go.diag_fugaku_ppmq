@@ -1,13 +1,18 @@
 #!/bin/sh
+#
+# sbatch go.diag_fugaku_ppqm
+#
+#
 #SBATCH -p ppmq
 #SBATCH -N 1
+#SBATCH -c 1
 #SBATCH -J GKV
 #SBATCH -t 24:00:00
 
 
 
-ulimit -s unlimited
-ulimit -n 16384
+#ulimit -s unlimited
+#ulimit -n 16384
 
 ### Working directory
 DIR=/data/hp150279/u00165/gkvp/f0.61/ITGae-lin
