@@ -3162,7 +3162,8 @@ SUBROUTINE rb_fxv_check
       call check_nf90err( ierr_nf90, "nf90_inquire_dimension" )
 
       if ( len_kx /= 2*nx+1 .or. len_ky /= global_ny+1 .or. &
-           len_zz /= nprocz/2+1 .or. len_vl /= 2*global_nv .or. &
+           !len_zz /= nprocz/2+1 .or. len_vl /= 2*global_nv .or. &
+           len_zz /= nprocz .or. len_vl /= 2*global_nv .or. &
            len_mu /= global_nm+1 .or. len_is /= nprocs ) then
         write(*,*) "# Error for reading the netCDF files *gkvp.fxv*.nc."
         write(*,*) "#   array size : "
@@ -3171,7 +3172,8 @@ SUBROUTINE rb_fxv_check
         write(*,*) "#              ky = ", len_ky
         write(*,*) "#     global_ny+1 = ", global_ny+1
         write(*,*) "#              zz = ", len_zz
-        write(*,*) "#      nprocz/2+1 = ", nprocz/2+1
+        !write(*,*) "#      nprocz/2+1 = ", nprocz/2+1
+        write(*,*) "#          nprocz = ", nprocz
         write(*,*) "#              vl = ", len_vl
         write(*,*) "#     2*global_nv = ", 2*global_nv
         write(*,*) "#              mu = ", len_mu
@@ -3196,7 +3198,8 @@ SUBROUTINE rb_fxv_check
     write(*,*) "#              ky = ", len_ky
     write(*,*) "#     global_ny+1 = ", global_ny+1
     write(*,*) "#              zz = ", len_zz
-    write(*,*) "#      nprocz/2+1 = ", nprocz/2+1
+    !write(*,*) "#      nprocz/2+1 = ", nprocz/2+1
+    write(*,*) "#          nprocz = ", nprocz
     write(*,*) "#              vl = ", len_vl
     write(*,*) "#     2*global_nv = ", 2*global_nv
     write(*,*) "#              mu = ", len_mu
@@ -4098,6 +4101,74 @@ SUBROUTINE rb_cnt_ivimisloop( giv, gim, is, loop, ff )
     ff = cmplx(recnt,imcnt,kind=DP)
 
 END SUBROUTINE rb_cnt_ivimisloop
+
+
+SUBROUTINE rb_cnt_izivimisloop( giz, giv, gim, is, loop, ff )
+!-------------------------------------------------------------------------------
+!
+!     Get ff at giz, giv, gim, is, loop
+!                                                   (S. Maeyama, 12 March 2022)
+!
+!-------------------------------------------------------------------------------
+  integer, intent(in) :: giz, giv, gim, is, loop
+  complex(kind=DP), intent(out),  &
+    dimension(-nx:nx,0:global_ny) :: ff
+
+  !complex(kind=DP), dimension(-nx:nx,0:ny,-nz:nz-1) :: wkff
+  !integer :: inum, irec, skipbyte, ir, rankm, rankv, rankz, rankw
+  integer :: inum, irec
+  !integer :: mx, my, iz, iv, im, gmy, giz
+
+  integer(kind=4) :: ierr_nf90
+  integer(kind=4) :: varid_recnt, varid_imcnt
+  integer(kind=4) :: start_cnt(1:7), count_cnt(1:7)
+  real(kind=DP), dimension(-nx:nx,0:global_ny) :: recnt
+  real(kind=DP), dimension(-nx:nx,0:global_ny) :: imcnt
+
+    !call rb_giv2rankviv( giv, rankv, iv )
+    !call rb_gim2rankmim( gim, rankm, im )
+    call rb_cnt_loop2inumirec( loop, inum, irec )
+
+    !do rankz = 0, nprocz-1
+    !  do rankw = 0, nprocw-1
+    !    ir = rankw + nprocw*rankz + nprocw*nprocz*rankv  &
+    !       + nprocw*nprocz*nprocv*rankm + nprocw*nprocz*nprocv*nprocm*is  ! ranks=is
+    !    skipbyte = recl_cnt*(irec-1) &  ! (irec-1) lines are skipped.
+    !             + nhead + DP        &  ! header and time is also skipped.
+    !             + ( (2*nx+1)*(ny+1)*(2*nz)*(2*nv)*im  &
+    !               + (2*nx+1)*(ny+1)*(2*nz)*(iv-1) )*(2*DP)
+    !    read( unit=600000000+100000*inum+ir, pos=skipbyte+1 ) wkff
+    !    do iz = -nz, nz-1
+    !      giz = - global_nz + 2*nz * rankz + iz + nz
+    !      do my = 0, ny
+    !        gmy = ( ny+1 ) * rankw + my
+    !        if ( gmy <= global_ny ) then
+    !          do mx = -nx, nx
+    !            ff(mx,gmy,giz) = wkff(mx,my,iz)
+    !          end do
+    !        end if
+    !      end do
+    !    end do
+    !  end do
+    !end do
+
+    ierr_nf90 = nf90_inq_varid( cnt_nc(inum), "recnt", varid_recnt )
+    ierr_nf90 = nf90_inq_varid( cnt_nc(inum), "imcnt", varid_imcnt )
+    call check_nf90err(ierr_nf90, "nf90_inq_varid" )
+
+    count_cnt(:) = int((/ 2*nx+1,global_ny+1,1,1,1,1,1 /), kind=4)
+    start_cnt(:) = int((/ 1,1,global_nz+giz+1,giv,gim+1,is+1,irec /), kind=4)
+    ierr_nf90 = nf90_get_var( cnt_nc(inum), varid_recnt, &
+                              values=recnt(:,:), &
+                              start=start_cnt, count=count_cnt )
+    ierr_nf90 = nf90_get_var( cnt_nc(inum), varid_imcnt, &
+                              values=imcnt(:,:), &
+                              start=start_cnt, count=count_cnt )
+    call check_nf90err(ierr_nf90, "nf90_get_var")
+
+    ff = cmplx(recnt,imcnt,kind=DP)
+
+END SUBROUTINE rb_cnt_izivimisloop
 
 
 SUBROUTINE rb_cnt_mxmyivimisloop( mx, gmy, giv, gim, is, loop, ff )
