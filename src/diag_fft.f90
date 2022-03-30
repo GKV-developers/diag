@@ -217,7 +217,8 @@ SUBROUTINE fft_time2freq_init ( nsample )
 
 !    call dfftw_plan_with_nthreads( 1 )
     call dfftw_plan_dft_1d( plan_time2freq,    &
-                            int(nsample,kind=4),           &
+                            nsample,           &
+                            !int(nsample,kind=4),           &
                             sample, spectrum,  &
                             FFTW_FORWARD,      &
                             FFTW_ESTIMATE )

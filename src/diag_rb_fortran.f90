@@ -2986,7 +2986,7 @@ END SUBROUTINE rb_cnt_ivimisloop
 SUBROUTINE rb_cnt_izivimisloop( giz, giv, gim, is, loop, ff )
 !-------------------------------------------------------------------------------
 !
-!     Get ff at giv, gim, is, loop
+!     Get ff at giz, giv, gim, is, loop
 !                                                   (S. Maeyama, 11 Oct. 2015)
 !
 !-------------------------------------------------------------------------------

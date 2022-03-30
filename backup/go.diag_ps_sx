@@ -36,7 +36,7 @@
 ##############
 
 #PBS -q small                     # queue name
-#PBS --group=20223                # resource group
+#PBS --group=21234                # resource group
 #PBS -T necmpi                    # necessary for MPI job
 #PBS -l elapstim_req=00:15:00     # elapsed time limit
 
@@ -57,9 +57,11 @@ MPI_procs=1                       # number of MPI processes (= venode*8 for flat
 
 #PBS -v LANG=C
 
+source /etc/profile.d/modules.sh
+
 #module load NECNLC-sx
 ## module load NECNLC-mpi-sx
-module load fftw-sx netcdf-parallelIO-fortran-sx/4.5.2
+module load fftw-sx netcdf-parallelIO-fortran-sx
 
 
 ### Working directory 
