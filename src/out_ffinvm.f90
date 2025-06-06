@@ -68,7 +68,7 @@ SUBROUTINE fkinvm_fxv( mx, gmy, rankz, is, loop )
       write( offinvm, "(99a17)" ) "#              vl","mu","vp","Re[ff]","Im[ff]"
       do im = 0, global_nm
         do iv = 1, 2*global_nv
-          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im), &
+          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(giz,im), gvp(giz,im), &
                                           real(fk(iv,im), kind=DP), aimag(fk(iv,im))
         end do
         write( offinvm, * )
@@ -119,7 +119,7 @@ SUBROUTINE fluxinvm_fxv( rankz, is, loop )
     do im = 0, global_nm
       do my = 0, global_ny
         do mx = -nx, nx
-          kmo = sqrt( 2._DP * gksq(mx,my,giz) * gmu(im) / gomg(giz) ) &
+          kmo = sqrt( 2._DP * gksq(mx,my,giz) * gmu(giz,im) / gomg(giz) ) &
               * dsqrt( tau(is)*Anum(is) ) / Znum(is)
           j0(mx,my,im) = besselj0(kmo) ! *  2._DP * pi * vp(giz,im)
         end do
@@ -150,7 +150,7 @@ SUBROUTINE fluxinvm_fxv( rankz, is, loop )
       write( offinvm, "(99a17)" ) "#              vl","mu","vp","Re[flux_es]","Im[flux_es]"
       do im = 0, global_nm
         do iv = 1, 2*global_nv
-          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im),  &
+          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(giz,im), gvp(giz,im),  &
                                           real(flux(iv,im),kind=DP), aimag(flux(iv,im))
         end do
         write( offinvm, * )
@@ -210,7 +210,7 @@ SUBROUTINE fkinvm_cnt( mx, gmy, giz, is, loop )
       write( offinvm, "(99a17)" ) "#              vl","mu","vp","Re[ff]","Im[ff]"
       do im = 0, global_nm
         do iv = 1, 2*global_nv
-          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im), &
+          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(giz,im), gvp(giz,im), &
                                           real(fk(iv,im), kind=DP), aimag(fk(iv,im))
         end do
         write( offinvm, * )
@@ -260,7 +260,7 @@ SUBROUTINE fluxinvm_cnt( giz, is, loop )
     do im = 0, global_nm
       do my = 0, global_ny
         do mx = -nx, nx
-          kmo = sqrt( 2._DP * gksq(mx,my,giz) * gmu(im) / gomg(giz) ) &
+          kmo = sqrt( 2._DP * gksq(mx,my,giz) * gmu(giz,im) / gomg(giz) ) &
               * dsqrt( tau(is)*Anum(is) ) / Znum(is)
           j0(mx,my,im) = besselj0(kmo) ! *  2._DP * pi * vp(giz,im)
         end do
@@ -291,7 +291,7 @@ SUBROUTINE fluxinvm_cnt( giz, is, loop )
       write( offinvm, "(99a17)" ) "#              vl","mu","vp","Re[flux_es]","Im[flux_es]"
       do im = 0, global_nm
         do iv = 1, 2*global_nv
-          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(im), gvp(giz,im),  &
+          write( offinvm, '(99g17.7e3)' ) gvl(iv), gmu(giz,im), gvp(giz,im),  &
                                           real(flux(iv,im), kind=DP), aimag(flux(iv,im))
         end do
         write( offinvm, * )

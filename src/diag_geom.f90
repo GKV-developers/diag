@@ -22,9 +22,13 @@ MODULE diag_geom
   real(kind=DP), dimension(0:global_ny)            :: gky
   real(kind=DP), dimension(-global_nz:global_nz-1) :: gzz, gomg, grootg
   real(kind=DP), dimension(1:2*global_nv)          :: gvl
-  real(kind=DP), dimension(0:global_nm)            :: gmu
-  real(kind=DP), dimension(-global_nz:global_nz-1,0:global_nm) :: gvp
+!> vp-mu
+  !real(kind=DP), dimension(0:global_nm)            :: gmu
+  real(kind=DP), dimension(-global_nz:global_nz-1,0:global_nm) :: gvp, gmu
   real(kind=DP), dimension(-global_nz:global_nz-1) :: dvp
+  real(kind=DP),  &
+    dimension(-global_nz:global_nz-1,1:2*global_nv,0:global_nm) :: dpp ! the operator with 0.5*vl*vp*d/d(vp)
+!< vp-mu
   real(kind=DP),  &
     dimension(-global_nz:global_nz-1,1:2*global_nv,0:global_nm) :: gfmx
   real(kind=DP),  &
@@ -55,6 +59,10 @@ MODULE diag_geom
   real(kind=DP) :: eps_rnew, rdeps1_0, rdeps1_10, rdeps2_10, rdeps3_10
   real(kind=DP) :: lx, ly, lz, kxmin, kymin, dz, mmax, dm, del_c
   integer       :: n_tht, m_j, ibprime, nx0
+
+!> vp-mu
+  integer :: vp_coord
+!< vp-mu
 
 
  CONTAINS
@@ -90,6 +98,14 @@ SUBROUTINE geom_init( inum )
   namelist /igsp/ s_input, mc_type, q_type, nss, ntheta
 !-----------
 
+!> vp-mu
+  character(len=9) :: calc_type, z_bound, z_filt, z_calc
+  real(kind=DP) :: art_diff
+  logical :: init_random
+  integer :: num_triad_diag
+  namelist /calct/ calc_type, z_bound, z_filt, z_calc, art_diff, &
+                   init_random, num_triad_diag, vp_coord
+!< vp-mu
   namelist /equib/ equib_type
   namelist /physp/ R0_Ln,  &    ! R0/Lns
                    R0_Lt,  &    ! R0/Lts
@@ -143,6 +159,10 @@ SUBROUTINE geom_init( inum )
     write( cnum, fmt="(i3.3)" ) inum
 
     open( inml, file="../gkvp_namelist."//cnum, status="old", action="read" )
+
+!> vp-mu
+    read(inml,nml=calct)
+!< vp-mu
 
     read(inml,nml=equib)
 
@@ -389,14 +409,35 @@ SUBROUTINE geom_init( inum )
       gvl(iv) = - vmax + dv * real( iv-1, kind=DP )
     end do
 
-    do im = 0, global_nm
-      gmu(im) = 0.5_DP * ( dm * real( im, kind=DP ) )**2
-    end do
-    do im = 0, global_nm
-      do iz = -global_nz, global_nz-1
-        gvp(iz,im) = sqrt( 2._DP * gmu(im) * gomg(iz) )
+!> vp-mu
+    !do im = 0, global_nm
+    !  gmu(im) = 0.5_DP * ( dm * real( im, kind=DP ) )**2
+    !end do
+    !do im = 0, global_nm
+    !  do iz = -global_nz, global_nz-1
+    !    gvp(iz,im) = sqrt( 2._DP * gmu(im) * gomg(iz) )
+    !  end do
+    !end do
+    if( vp_coord == 1 ) then
+
+      do im = 0, global_nm
+        do iz = -global_nz, global_nz-1
+          gvp(iz,im) = dm * real( im, kind=DP )
+          gmu(iz,im) = 0.5_DP * gvp(iz,im)**2 / gomg(iz)
+        end do
       end do
-    end do
+
+    else
+
+      do im = 0, global_nm
+        do iz = -global_nz, global_nz-1
+          gmu(iz,im) = 0.5_DP * ( dm * real( im, kind=DP ) )**2
+          gvp(iz,im) = sqrt( 2._DP * gmu(iz,im) * gomg(iz) )
+        end do
+      end do
+
+    end if
+!< vp-mu
     do iz = -global_nz, global_nz-1
       dvp(iz) = gvp(iz,1)
     end do

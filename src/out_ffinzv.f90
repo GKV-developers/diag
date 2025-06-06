@@ -24,7 +24,7 @@ SUBROUTINE fkinzv( mx, gmy, gim, is, loop )
 !
 !-------------------------------------------------------------------------------
   use diag_rb, only : rb_cnt_gettime, rb_cnt_mxmyimisloop
-  use diag_geom, only : kx, gky, gzz, gvl, gmu
+  use diag_geom, only : kx, gky, gzz, gvl, gmu, gvp, vp_coord
 
   integer, intent(in) :: mx, gmy, gim, is, loop
 
@@ -48,7 +48,11 @@ SUBROUTINE fkinzv( mx, gmy, gim, is, loop )
       write( offinzv, "(a,i17,a,g17.7e3)" ) "# loop=",loop, ", time=",time
       write( offinzv, "(a,i17,a,g17.7e3)" ) "#   mx=",mx,   ",   kx=",kx(mx)
       write( offinzv, "(a,i17,a,g17.7e3)" ) "#  gmy=",gmy,  ",  gky=",gky(gmy)
-      write( offinzv, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gmu=",gmu(gim)
+      if ( vp_coord == 1 ) then
+        write( offinzv, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gvp=",gvp(0,gim)
+      else
+        write( offinzv, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gmu=",gmu(0,gim)
+      end if
       write( offinzv, "(99a17)" ) "#              zz","vl","Re[ff]","Im[ff]"
       do iv = 1, 2*global_nv
         do iz = -global_nz, global_nz-1
