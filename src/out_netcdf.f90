@@ -284,7 +284,7 @@ SUBROUTINE fxvinnetcdf
 !
 !-------------------------------------------------------------------------------
   use diag_rb, only : rb_fxv_gettime, rb_fxv_rankzivimisloop, loop_fxv_sta, loop_fxv_end
-  use diag_geom, only : kx, gky, gzz, gvl, gmu
+  use diag_geom, only : kx, gky, gzz, gvl, gmu, gvp, vp_coord
 
   real(kind=DP) :: time
   complex(kind=DP), dimension(-nx:nx,0:global_ny,0:nprocz-1) :: fxv
@@ -309,7 +309,11 @@ SUBROUTINE fxvinnetcdf
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="ky", len=int(global_ny+1,kind=4), dimid=dimids(2))
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="zz", len=int(nprocz,kind=4),      dimid=dimids(3))
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="vl", len=int(2*global_nv,kind=4), dimid=dimids(4)) 
-      ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="mu", len=int(global_nm+1,kind=4), dimid=dimids(5)) 
+      if ( vp_coord == 1 ) then
+        ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="vp", len=int(global_nm+1,kind=4), dimid=dimids(5)) 
+      else
+        ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="mu", len=int(global_nm+1,kind=4), dimid=dimids(5)) 
+      end if
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="is", len=int(ns,kind=4),          dimid=dimids(6)) 
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="t",  len=NF90_UNLIMITED,          dimid=dimids(7))
       call check_nf90err(ierr_nf90, "nf90_def_dim")
@@ -319,7 +323,11 @@ SUBROUTINE fxvinnetcdf
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="ky",    xtype=NF90_DOUBLE, dimids=dimids(2),   varid=varid_ky)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="zz",    xtype=NF90_DOUBLE, dimids=dimids(3),   varid=varid_zz)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="vl",    xtype=NF90_DOUBLE, dimids=dimids(4),   varid=varid_vl)
-      ierr_nf90=nf90_def_var(ncid=ncid_out1, name="mu",    xtype=NF90_DOUBLE, dimids=dimids(5),   varid=varid_mu)
+      if ( vp_coord == 1 ) then
+        ierr_nf90=nf90_def_var(ncid=ncid_out1, name="vp",    xtype=NF90_DOUBLE, dimids=dimids(5),   varid=varid_mu)
+      else
+        ierr_nf90=nf90_def_var(ncid=ncid_out1, name="mu",    xtype=NF90_DOUBLE, dimids=dimids(5),   varid=varid_mu)
+      end if
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="is",    xtype=NF90_INT,    dimids=dimids(6),   varid=varid_is)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="t",     xtype=NF90_DOUBLE, dimids=dimids(7),   varid=varid_tt)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="refxv", xtype=NF90_DOUBLE, dimids=dimids(1:7), varid=varid_refxv)
@@ -335,7 +343,11 @@ SUBROUTINE fxvinnetcdf
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_ky, values=gky(0:global_ny))
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_zz, values=gzz(-global_nz:global_nz-1:2*nz))
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_vl, values=gvl(1:2*global_nv))
-      ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_mu, values=gmu(0:global_nm))
+      if ( vp_coord == 1 ) then
+        ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_mu, values=gvp(0,0:global_nm))
+      else
+        ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_mu, values=gmu(0,0:global_nm))
+      end if
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_is, values=(/ (is, is=0,ns-1) /))
       call check_nf90err(ierr_nf90, "nf90_putvar")
   
@@ -375,7 +387,7 @@ SUBROUTINE cntinnetcdf
 !
 !-------------------------------------------------------------------------------
   use diag_rb, only : rb_cnt_gettime, rb_cnt_ivimisloop, loop_cnt_sta, loop_cnt_end
-  use diag_geom, only : kx, gky, gzz, gvl, gmu
+  use diag_geom, only : kx, gky, gzz, gvl, gmu, gvp, vp_coord
 
   real(kind=DP) :: time
   complex(kind=DP), dimension(-nx:nx,0:global_ny,-global_nz:global_nz-1) :: cnt
@@ -400,7 +412,11 @@ SUBROUTINE cntinnetcdf
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="ky", len=int(global_ny+1,kind=4), dimid=dimids(2))
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="zz", len=int(2*global_nz,kind=4), dimid=dimids(3))
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="vl", len=int(2*global_nv,kind=4), dimid=dimids(4)) 
-      ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="mu", len=int(global_nm+1,kind=4), dimid=dimids(5)) 
+      if ( vp_coord == 1 ) then
+        ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="vp", len=int(global_nm+1,kind=4), dimid=dimids(5)) 
+      else
+        ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="mu", len=int(global_nm+1,kind=4), dimid=dimids(5)) 
+      end if
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="is", len=int(ns,kind=4),          dimid=dimids(6)) 
       ierr_nf90=nf90_def_dim(ncid=ncid_out1, name="t",  len=NF90_UNLIMITED,          dimid=dimids(7))
       call check_nf90err(ierr_nf90, "nf90_def_dim")
@@ -410,7 +426,11 @@ SUBROUTINE cntinnetcdf
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="ky",    xtype=NF90_DOUBLE, dimids=dimids(2),   varid=varid_ky)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="zz",    xtype=NF90_DOUBLE, dimids=dimids(3),   varid=varid_zz)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="vl",    xtype=NF90_DOUBLE, dimids=dimids(4),   varid=varid_vl)
-      ierr_nf90=nf90_def_var(ncid=ncid_out1, name="mu",    xtype=NF90_DOUBLE, dimids=dimids(5),   varid=varid_mu)
+      if ( vp_coord == 1 ) then
+        ierr_nf90=nf90_def_var(ncid=ncid_out1, name="vp",    xtype=NF90_DOUBLE, dimids=dimids(5),   varid=varid_mu)
+      else
+        ierr_nf90=nf90_def_var(ncid=ncid_out1, name="mu",    xtype=NF90_DOUBLE, dimids=dimids(5),   varid=varid_mu)
+      end if
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="is",    xtype=NF90_INT,    dimids=dimids(6),   varid=varid_is)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="t",     xtype=NF90_DOUBLE, dimids=dimids(7),   varid=varid_tt)
       ierr_nf90=nf90_def_var(ncid=ncid_out1, name="recnt", xtype=NF90_DOUBLE, dimids=dimids(1:7), varid=varid_recnt)
@@ -426,7 +446,11 @@ SUBROUTINE cntinnetcdf
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_ky, values=gky(0:global_ny))
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_zz, values=gzz(-global_nz:global_nz-1))
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_vl, values=gvl(1:2*global_nv))
-      ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_mu, values=gmu(0:global_nm))
+      if ( vp_coord == 1 ) then
+        ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_mu, values=gvp(0,0:global_nm))
+      else
+        ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_mu, values=gmu(0,0:global_nm))
+      end if
       ierr_nf90=nf90_put_var(ncid=ncid_out1, varid=varid_is, values=(/ (is, is=0,ns-1) /))
       call check_nf90err(ierr_nf90, "nf90_putvar")
   

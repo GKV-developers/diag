@@ -24,7 +24,7 @@ SUBROUTINE fkinkxky_fxv( rankz, giv, gim, is, loop )
 !
 !-------------------------------------------------------------------------------
   use diag_rb, only : rb_fxv_gettime, rb_fxv_rankzivimisloop
-  use diag_geom, only : kx, gky, gzz, gvl, gmu
+  use diag_geom, only : kx, gky, gzz, gvl, gmu, gvp, vp_coord
 
   integer, intent(in) :: rankz, giv, gim, is, loop
 
@@ -49,7 +49,11 @@ SUBROUTINE fkinkxky_fxv( rankz, giv, gim, is, loop )
       write( offinkxky, "(a,i17,a,g17.7e3)" ) "# loop=",loop, ", time=",time
       write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  giz=",giz,  ",  gzz=",gzz(giz)
       write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  giv=",giv,  ",  gvl=",gvl(giv)
-      write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gmu=",gmu(gim)
+      if ( vp_coord == 1 ) then
+        write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gvp=",gvp(0,gim)
+      else
+        write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gmu=",gmu(0,gim)
+      end if
       write( offinkxky, "(99a17)" ) "#              kx","ky","|ff|^2"
       do my = 0, global_ny
         do mx = -nx, nx
@@ -70,7 +74,7 @@ SUBROUTINE fkinkxky_cnt( giz, giv, gim, is, loop )
 !
 !-------------------------------------------------------------------------------
   use diag_rb, only : rb_cnt_gettime, rb_cnt_ivimisloop
-  use diag_geom, only : kx, gky, gzz, gvl, gmu
+  use diag_geom, only : kx, gky, gzz, gvl, gmu, gvp, vp_coord
 
   integer, intent(in) :: giz, giv, gim, is, loop
 
@@ -94,7 +98,11 @@ SUBROUTINE fkinkxky_cnt( giz, giv, gim, is, loop )
       write( offinkxky, "(a,i17,a,g17.7e3)" ) "# loop=",loop, ", time=",time
       write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  giz=",giz,  ",  gzz=",gzz(giz)
       write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  giv=",giv,  ",  gvl=",gvl(giv)
-      write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gmu=",gmu(gim)
+      if ( vp_coord == 1 ) then
+        write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gvp=",gvp(0,gim)
+      else
+        write( offinkxky, "(a,i17,a,g17.7e3)" ) "#  gim=",gim,  ",  gmu=",gmu(0,gim)
+      end if
       write( offinkxky, "(99a17)" ) "#              kx","ky","|ff|^2"
       do my = 0, global_ny
         do mx = -nx, nx

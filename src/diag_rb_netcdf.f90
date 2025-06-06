@@ -2645,9 +2645,13 @@ SUBROUTINE rb_tri_fileopen
   logical :: init_random
 
   integer(kind=4) :: ierr_nf90
+  integer :: vp_coord
 
   namelist /calct/ calc_type, z_bound, z_filt, z_calc, art_diff, &
-                   init_random, num_triad_diag
+!> vp-mu
+                   !init_random, num_triad_diag
+                   init_random, num_triad_diag, vp_coord
+!< vp-mu
   namelist /triad/ mxt, myt
 
     write( cnum, fmt="(i3.3)" ) snum
@@ -3150,6 +3154,15 @@ SUBROUTINE rb_fxv_check
       ierr_nf90 = nf90_inq_varid( fxv_nc(inum), "zz", varid_zz )
       ierr_nf90 = nf90_inq_varid( fxv_nc(inum), "vl", varid_vl )
       ierr_nf90 = nf90_inq_varid( fxv_nc(inum), "mu", varid_mu )
+!> vp-mu
+      if (ierr_nf90 /= nf90_noerr) then ! if "mu" is not found, find "vp"
+        ierr_nf90 = nf90_inq_varid( fxv_nc(inum), "vp", varid_mu )
+        if (ierr_nf90 /= nf90_noerr) then
+          print *, "Neither 'mu' nor 'vp' found in NetCDF file."
+          stop
+        end if
+      end if
+!< vp-mu
       ierr_nf90 = nf90_inq_varid( fxv_nc(inum), "is", varid_is )
       call check_nf90err( ierr_nf90, "nf90_inq_varid" )
 
@@ -3647,6 +3660,15 @@ SUBROUTINE rb_cnt_check
       ierr_nf90 = nf90_inq_varid( cnt_nc(inum), "zz", varid_zz )
       ierr_nf90 = nf90_inq_varid( cnt_nc(inum), "vl", varid_vl )
       ierr_nf90 = nf90_inq_varid( cnt_nc(inum), "mu", varid_mu )
+!> vp-mu
+      if (ierr_nf90 /= nf90_noerr) then ! if "mu" is not found, find "vp"
+        ierr_nf90 = nf90_inq_varid( cnt_nc(inum), "vp", varid_mu )
+        if (ierr_nf90 /= nf90_noerr) then
+          print *, "Neither 'mu' nor 'vp' found in NetCDF file."
+          stop
+        end if
+      end if
+!< vp-mu
       ierr_nf90 = nf90_inq_varid( cnt_nc(inum), "is", varid_is )
       call check_nf90err( ierr_nf90, "nf90_inq_varid" )
 

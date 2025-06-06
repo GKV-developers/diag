@@ -1945,8 +1945,12 @@ SUBROUTINE rb_tri_fileopen
   character(len=9) :: z_bound, z_filt, z_calc
   real(kind=DP) :: art_diff
   logical :: init_random
+  integer :: vp_coord
   namelist /calct/ calc_type, z_bound, z_filt, z_calc, art_diff, &
-                   init_random, num_triad_diag
+!> vp-mu
+                   !init_random, num_triad_diag
+                   init_random, num_triad_diag, vp_coord
+!< vp-mu
   namelist /triad/ mxt, myt
 
     write( cnum, fmt="(i3.3)" ) snum
